@@ -14,7 +14,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <link rel="stylesheet" href="{{ asset('styles.css') }}">
+    <link rel="stylesheet" href="/assets/css/styles.css">
 </head>
 <body>
     <!-- Navbar -->
@@ -53,7 +53,7 @@
                 </div>
             </div>
             <div class="hero-visual animate-fade-in delay-2">
-                <img src="{{ asset('assets/hero_elderly.png') }}" alt="Idoso vestindo o colete Sage com conforto e discrição" class="hero-image">
+                <img src="/assets/img/hero_elderly.png" alt="Idoso vestindo o colete Sage com conforto e discrição" class="hero-image">
             </div>
         </div>
     </section>
@@ -91,7 +91,7 @@
             <div class="solution-grid">
                 <div class="solution-visual reveal">
                     <div class="vest-mockup">
-                        <img src="{{ asset('assets/vest_product.png') }}" alt="Renderização 3D do colete inteligente Sage com sensores" class="vest-image">
+                        <img src="/assets/img/vest_product.png" alt="Renderização 3D do colete inteligente Sage com sensores" class="vest-image">
                     </div>
                 </div>
                 <div class="solution-content">
@@ -217,8 +217,8 @@
                     <div class="testimonial-author">
                         <div class="avatar">J</div>
                         <div>
-                            <h4>João Mendes</h4>
-                            <span>Usuário Sage, 76 anos</span>
+                            <h4>João Pedro</h4>
+                            <span>Usuário Sage, 67 anos</span>
                         </div>
                     </div>
                 </div>
@@ -316,7 +316,7 @@
                     <i data-lucide="shield-check" class="logo-icon"></i>
                     <span>Sage</span>
                 </div>
-                <p>Cuidado invisível. Proteção contínua. Inovação que salva vidas e traz paz para a família.</p>
+                <p>Cuidado invisível. Proteção contínua. Inovação que salva vidas e traz paz para a família. Farmar aura faz parte do nosso sonho!</p>
             </div>
             <div class="footer-links">
                 <h4>Links Rápidos</h4>
@@ -328,7 +328,7 @@
             <div class="footer-contact">
                 <h4>Contato</h4>
                 <a href="mailto:contato@sagewearable.com">contato@sagewearable.com</a>
-                <a href="tel:+5511999999999">(11) 99999-9999</a>
+                <a href="tel:+5511999999999">(31) 92469-6742</a>
                 <div class="social-links mt-2">
                     <a href="#"><i data-lucide="instagram"></i></a>
                     <a href="#"><i data-lucide="linkedin"></i></a>

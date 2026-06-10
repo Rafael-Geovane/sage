@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="{{ asset('styles.css') }}">
+    <link rel="stylesheet" href="/assets/css/styles.css">
 </head>
 <body class="admin-page">
 
@@ -76,14 +76,14 @@
                 <div class="kpi-card">
                     <i data-lucide="users" class="kpi-icon" style="color: var(--primary);"></i>
                     <div class="kpi-data">
-                        <h3>1.247</h3>
+                        <h3>{{ $totalUsuarios }}</h3>
                         <p>Clientes Ativos</p>
                     </div>
                 </div>
                 <div class="kpi-card">
                     <i data-lucide="cpu" class="kpi-icon" style="color: var(--success);"></i>
                     <div class="kpi-data">
-                        <h3>1.189</h3>
+                        <h3>{{ $dispositivosOnline }}</h3>
                         <p>Coletes Online</p>
                     </div>
                 </div>
@@ -97,7 +97,7 @@
                 <div class="kpi-card">
                     <i data-lucide="headphones" class="kpi-icon" style="color: var(--heart);"></i>
                     <div class="kpi-data">
-                        <h3>12</h3>
+                        <h3>{{ $ticketsAbertos }}</h3>
                         <p>Tickets Abertos</p>
                     </div>
                 </div>
@@ -120,13 +120,19 @@
                 <div class="chart-card">
                     <h4><i data-lucide="pie-chart"></i> Distribuição de Planos</h4>
                     <div class="plan-dist">
-                        <div class="plan-dist-item"><span class="plan-dot" style="background: var(--primary);"></span> Premium SaaS <strong>58%</strong></div>
-                        <div class="plan-dist-item"><span class="plan-dot" style="background: var(--warning);"></span> Assinatura Total <strong>27%</strong></div>
-                        <div class="plan-dist-item"><span class="plan-dot" style="background: var(--text-secondary);"></span> Básico <strong>15%</strong></div>
+                        @php
+                            $totalPlanos = $usuarios->count() ?: 1;
+                            $premiumPct = round($usuarios->where('nome_plano', 'Premium')->count() / $totalPlanos * 100);
+                            $haasPct    = round($usuarios->where('nome_plano', 'HaaS')->count() / $totalPlanos * 100);
+                            $basicoPct  = 100 - $premiumPct - $haasPct;
+                        @endphp
+                        <div class="plan-dist-item"><span class="plan-dot" style="background: var(--primary);"></span> Premium SaaS <strong>{{ $premiumPct }}%</strong></div>
+                        <div class="plan-dist-item"><span class="plan-dot" style="background: var(--warning);"></span> HaaS <strong>{{ $haasPct }}%</strong></div>
+                        <div class="plan-dist-item"><span class="plan-dot" style="background: var(--text-secondary);"></span> Básico <strong>{{ $basicoPct }}%</strong></div>
                         <div class="dist-bars">
-                            <div class="dist-bar" style="width: 58%; background: var(--primary);"></div>
-                            <div class="dist-bar" style="width: 27%; background: var(--warning);"></div>
-                            <div class="dist-bar" style="width: 15%; background: var(--text-secondary);"></div>
+                            <div class="dist-bar" style="width: {{ $premiumPct }}%; background: var(--primary);"></div>
+                            <div class="dist-bar" style="width: {{ $haasPct }}%; background: var(--warning);"></div>
+                            <div class="dist-bar" style="width: {{ $basicoPct }}%; background: var(--text-secondary);"></div>
                         </div>
                     </div>
                 </div>
@@ -139,11 +145,11 @@
                 <h2>Gestão de Usuários</h2>
                 <div class="search-bar">
                     <i data-lucide="search"></i>
-                    <input type="text" placeholder="Buscar por nome ou e-mail..." class="input-field">
+                    <input type="text" placeholder="Buscar por nome ou e-mail..." class="input-field" id="user-search">
                 </div>
             </div>
             <div class="data-table-wrapper">
-                <table class="data-table">
+                <table class="data-table" id="users-table">
                     <thead>
                         <tr>
                             <th>Nome</th>
@@ -155,38 +161,22 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($usuarios as $u)
                         <tr>
-                            <td><div class="table-user"><div class="user-avatar sm">JM</div> João Mendes</div></td>
-                            <td><span class="plan-tag premium">Premium</span></td>
-                            <td>SGE-0042</td>
-                            <td><span class="status-pill online">Online</span></td>
-                            <td>Há 12s</td>
+                            <td><div class="table-user"><div class="user-avatar sm">{{ $u->iniciais }}</div> {{ $u->nome }}</div></td>
+                            <td><span class="plan-tag {{ $u->plano_css_class }}">{{ $u->nome_plano ?? 'N/A' }}</span></td>
+                            <td>{{ $u->dispositivo->codigo_serial ?? '—' }}</td>
+                            <td>
+                                @if($u->dispositivo)
+                                    <span class="status-pill {{ $u->dispositivo->is_online ? 'online' : 'offline' }}">{{ $u->dispositivo->status_conexao }}</span>
+                                @else
+                                    <span class="status-pill offline">Sem dispositivo</span>
+                                @endif
+                            </td>
+                            <td>{{ $u->dispositivo->tempo_ultimo_sinal ?? '—' }}</td>
                             <td><button class="icon-btn sm"><i data-lucide="eye"></i></button></td>
                         </tr>
-                        <tr>
-                            <td><div class="table-user"><div class="user-avatar sm" style="background: var(--info);">RL</div> Rosa Lima</div></td>
-                            <td><span class="plan-tag haas">HaaS</span></td>
-                            <td>SGE-0078</td>
-                            <td><span class="status-pill online">Online</span></td>
-                            <td>Há 45s</td>
-                            <td><button class="icon-btn sm"><i data-lucide="eye"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td><div class="table-user"><div class="user-avatar sm" style="background: var(--warning);">AS</div> Antônio Souza</div></td>
-                            <td><span class="plan-tag basic">Básico</span></td>
-                            <td>SGE-0105</td>
-                            <td><span class="status-pill offline">Offline</span></td>
-                            <td>Há 3h</td>
-                            <td><button class="icon-btn sm"><i data-lucide="eye"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td><div class="table-user"><div class="user-avatar sm" style="background: var(--heart);">MC</div> Maria Clara</div></td>
-                            <td><span class="plan-tag premium">Premium</span></td>
-                            <td>SGE-0210</td>
-                            <td><span class="status-pill online">Online</span></td>
-                            <td>Há 1m</td>
-                            <td><button class="icon-btn sm"><i data-lucide="eye"></i></button></td>
-                        </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -196,9 +186,9 @@
         <section class="dash-section" id="section-admin-fleet">
             <h2>Monitoramento de Frota IoT</h2>
             <div class="fleet-summary">
-                <div class="fleet-stat"><h3>1.189</h3><p>Online</p><span class="status-dot green"></span></div>
-                <div class="fleet-stat"><h3>42</h3><p>Offline</p><span class="status-dot red"></span></div>
-                <div class="fleet-stat"><h3>16</h3><p>Bateria Crítica</p><span class="status-dot yellow"></span></div>
+                <div class="fleet-stat"><h3>{{ $dispositivosOnline }}</h3><p>Online</p><span class="status-dot green"></span></div>
+                <div class="fleet-stat"><h3>{{ $dispositivosOffline }}</h3><p>Offline</p><span class="status-dot red"></span></div>
+                <div class="fleet-stat"><h3>{{ $dispositivosBatCrit }}</h3><p>Bateria Crítica</p><span class="status-dot yellow"></span></div>
             </div>
             <div class="data-table-wrapper">
                 <table class="data-table">
@@ -213,38 +203,16 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($dispositivos as $d)
                         <tr>
-                            <td class="mono">SGE-0042</td>
-                            <td>João Mendes</td>
-                            <td>v2.4.1</td>
-                            <td><div class="battery-bar"><div class="battery-level" style="width: 85%; background: var(--success);"></div></div> 85%</td>
-                            <td>Wi-Fi</td>
-                            <td><span class="status-pill online">Online</span></td>
+                            <td class="mono">{{ $d->codigo_serial }}</td>
+                            <td>{{ $d->usuario->nome ?? '—' }}</td>
+                            <td>{{ $d->versao_firmware ?? '—' }}</td>
+                            <td><div class="battery-bar"><div class="battery-level" style="width: {{ $d->nivel_bateria }}%; background: {{ $d->bateria_css_color }};"></div></div> {{ $d->nivel_bateria }}%</td>
+                            <td>{{ $d->tipo_conexao ?? '—' }}</td>
+                            <td><span class="status-pill {{ $d->is_online ? 'online' : 'offline' }}">{{ $d->status_conexao }}</span></td>
                         </tr>
-                        <tr>
-                            <td class="mono">SGE-0078</td>
-                            <td>Rosa Lima</td>
-                            <td>v2.4.1</td>
-                            <td><div class="battery-bar"><div class="battery-level" style="width: 62%; background: var(--warning);"></div></div> 62%</td>
-                            <td>BLE</td>
-                            <td><span class="status-pill online">Online</span></td>
-                        </tr>
-                        <tr>
-                            <td class="mono">SGE-0105</td>
-                            <td>Antônio Souza</td>
-                            <td>v2.3.8</td>
-                            <td><div class="battery-bar"><div class="battery-level" style="width: 12%; background: var(--danger);"></div></div> 12%</td>
-                            <td>—</td>
-                            <td><span class="status-pill offline">Offline</span></td>
-                        </tr>
-                        <tr>
-                            <td class="mono">SGE-0210</td>
-                            <td>Maria Clara</td>
-                            <td>v2.4.0</td>
-                            <td><div class="battery-bar"><div class="battery-level" style="width: 95%; background: var(--success);"></div></div> 95%</td>
-                            <td>Wi-Fi</td>
-                            <td><span class="status-pill online">Online</span></td>
-                        </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -256,7 +224,7 @@
             <div class="admin-kpi-grid">
                 <div class="kpi-card">
                     <i data-lucide="receipt" class="kpi-icon" style="color: var(--primary);"></i>
-                    <div class="kpi-data"><h3>327</h3><p>Pedidos este Mês</p></div>
+                    <div class="kpi-data"><h3>{{ $totalPedidos }}</h3><p>Pedidos Registrados</p></div>
                 </div>
                 <div class="kpi-card">
                     <i data-lucide="wallet" class="kpi-icon" style="color: var(--success);"></i>
@@ -280,30 +248,16 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($pedidos as $p)
                         <tr>
-                            <td class="mono">#2026-0421</td>
-                            <td>Mariana Silva</td>
-                            <td><span class="plan-tag premium">Premium</span></td>
-                            <td>R$ 1.299,00</td>
-                            <td>Pix</td>
-                            <td><span class="status-pill online">Entregue</span></td>
+                            <td class="mono">{{ $p->numero_pedido }}</td>
+                            <td>{{ $p->usuario->nome }}</td>
+                            <td><span class="plan-tag {{ $p->usuario->plano_css_class }}">{{ $p->usuario->nome_plano ?? 'N/A' }}</span></td>
+                            <td>{{ $p->valor }}</td>
+                            <td>{{ $p->forma_pagamento }}</td>
+                            <td><span class="status-pill {{ $p->status_css_class }}">{{ $p->status }}</span></td>
                         </tr>
-                        <tr>
-                            <td class="mono">#2026-0420</td>
-                            <td>Carlos Mendes</td>
-                            <td><span class="plan-tag haas">HaaS</span></td>
-                            <td>R$ 149,00/mês</td>
-                            <td>Cartão</td>
-                            <td><span class="status-pill warning">Enviado</span></td>
-                        </tr>
-                        <tr>
-                            <td class="mono">#2026-0419</td>
-                            <td>Fernanda Costa</td>
-                            <td><span class="plan-tag basic">Básico</span></td>
-                            <td>R$ 1.299,00</td>
-                            <td>Boleto</td>
-                            <td><span class="status-pill pending">Pend. Pagamento</span></td>
-                        </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -333,11 +287,11 @@
                 <div class="ota-options">
                     <label class="ota-option">
                         <input type="radio" name="ota-target" value="all" checked>
-                        <span>Todos os dispositivos (1.189 online)</span>
+                        <span>Todos os dispositivos ({{ $dispositivosOnline }} online)</span>
                     </label>
                     <label class="ota-option">
                         <input type="radio" name="ota-target" value="outdated">
-                        <span>Apenas desatualizados (v2.3.x — 58 dispositivos)</span>
+                        <span>Apenas desatualizados (v2.3.x — {{ $dispositivos->filter(fn($d) => str_starts_with($d->versao_firmware ?? '', 'v2.3'))->count() }} dispositivos)</span>
                     </label>
                     <label class="ota-option">
                         <input type="radio" name="ota-target" value="batch">
@@ -352,8 +306,8 @@
         <section class="dash-section" id="section-admin-support">
             <h2>Suporte ao Cliente</h2>
             <div class="support-summary">
-                <div class="kpi-card"><div class="kpi-data"><h3>12</h3><p>Tickets Abertos</p></div></div>
-                <div class="kpi-card"><div class="kpi-data"><h3>4</h3><p>Prioridade Alta</p></div></div>
+                <div class="kpi-card"><div class="kpi-data"><h3>{{ $ticketsAbertos }}</h3><p>Tickets Abertos</p></div></div>
+                <div class="kpi-card"><div class="kpi-data"><h3>{{ $ticketsAlta }}</h3><p>Prioridade Alta</p></div></div>
                 <div class="kpi-card"><div class="kpi-data"><h3>2h 15m</h3><p>Tempo Médio de Resposta</p></div></div>
             </div>
             <div class="data-table-wrapper">
@@ -369,38 +323,16 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($tickets as $t)
                         <tr>
-                            <td class="mono">#T-0891</td>
-                            <td>João Mendes</td>
-                            <td>Colete não conecta ao Wi-Fi</td>
-                            <td><span class="priority-tag high">Alta</span></td>
-                            <td><span class="status-pill warning">Em Andamento</span></td>
+                            <td class="mono">{{ $t->numero_ticket }}</td>
+                            <td>{{ $t->usuario->nome }}</td>
+                            <td>{{ $t->assunto }}</td>
+                            <td><span class="priority-tag {{ $t->prioridade_css_class }}">{{ $t->prioridade }}</span></td>
+                            <td><span class="status-pill {{ $t->status_css_class }}">{{ $t->status }}</span></td>
                             <td><button class="icon-btn sm"><i data-lucide="message-square"></i></button></td>
                         </tr>
-                        <tr>
-                            <td class="mono">#T-0890</td>
-                            <td>Fernanda Costa</td>
-                            <td>Dúvida sobre lavagem do colete</td>
-                            <td><span class="priority-tag low">Baixa</span></td>
-                            <td><span class="status-pill online">Respondido</span></td>
-                            <td><button class="icon-btn sm"><i data-lucide="message-square"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td class="mono">#T-0889</td>
-                            <td>Carlos Mendes</td>
-                            <td>Alerta de queda falso positivo</td>
-                            <td><span class="priority-tag high">Alta</span></td>
-                            <td><span class="status-pill warning">Em Andamento</span></td>
-                            <td><button class="icon-btn sm"><i data-lucide="message-square"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td class="mono">#T-0888</td>
-                            <td>Rosa Lima</td>
-                            <td>Troca de tamanho do colete HaaS</td>
-                            <td><span class="priority-tag medium">Média</span></td>
-                            <td><span class="status-pill pending">Aguardando</span></td>
-                            <td><button class="icon-btn sm"><i data-lucide="message-square"></i></button></td>
-                        </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -411,5 +343,6 @@
     <script>
         lucide.createIcons();
     </script>
+
 </body>
 </html>

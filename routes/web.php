@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/styles.css', function () {
@@ -13,18 +17,23 @@ Route::get('/styles.css', function () {
         ->header('Content-Type', 'text/css');
 });
 
-Route::get('/', function () {
-    return view('index');
-})->name('home');
+// Páginas estáticas
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/loja', [HomeController::class, 'loja'])->name('loja');
 
-Route::get('/admin', function() {
-    return view('admin');
-})->name('admin');
+// Painéis com dados do banco
+Route::get('/admin', [AdminController::class, 'index'])->name('admin');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-Route::get('/dashboard', function() {
-    return view('dashboard');
-})->name('dashboard');
+// API de Usuários (CRUD)
+Route::prefix('api')->group(function () {
+    Route::get('/usuarios', [UsuarioController::class, 'index']);
+    Route::post('/usuarios', [UsuarioController::class, 'store']);
+    Route::get('/usuarios/{id}', [UsuarioController::class, 'show']);
+    Route::put('/usuarios/{id}', [UsuarioController::class, 'update']);
+    Route::delete('/usuarios/{id}', [UsuarioController::class, 'destroy']);
 
-Route::get('/loja', function() {
-    return view('loja');
-})->name('loja');
+    // Cuidadores de um usuário
+    Route::post('/usuarios/{usuarioId}/cuidadores', [UsuarioController::class, 'storeCuidador']);
+    Route::delete('/usuarios/{usuarioId}/cuidadores/{cuidadorId}', [UsuarioController::class, 'destroyCuidador']);
+});

@@ -57,18 +57,18 @@
                     <a href="{{ route('admin') }}" class="nav-item" data-section="admin-panel">
                         <i data-lucide="settings"></i><span>Painel</span>
                     </a>
-                <div class="device-status online">
-                    <span class="status-dot"></span> Colete Online
+                <div class="device-status {{ isset($dispositivo) && $dispositivo && $dispositivo->is_online ? 'online' : 'offline' }}">
+                    <span class="status-dot"></span> Colete {{ isset($dispositivo) && $dispositivo ? $dispositivo->status_conexao : 'N/A' }}
                 </div>
-                <div class="user-avatar">MS</div>
+                <div class="user-avatar">{{ isset($usuario) ? $usuario->iniciais : 'NA' }}</div>
             </div>
         </header>
 
         <!-- Section: Overview -->
         <section class="dash-section active" id="section-overview">
             <div class="dash-greeting">
-                <h1>Olá, Mariana 👋</h1>
-                <p>Último dado recebido: <strong>há 12 segundos</strong></p>
+                <h1>Olá, {{ isset($usuario) ? explode(' ', $usuario->nome)[0] : 'Usuário' }} 👋</h1>
+                <p>Último dado recebido: <strong>{{ isset($dispositivo) && $dispositivo ? $dispositivo->tempo_ultimo_sinal : 'N/A' }}</strong></p>
             </div>
 
             <!-- Vital Cards -->
@@ -76,9 +76,11 @@
                 <div class="vital-card heart-card">
                     <div class="vital-header">
                         <div class="vital-icon pulse-primary"><i data-lucide="heart-pulse"></i></div>
-                        <span class="vital-badge normal">Normal</span>
+                        <span class="vital-badge {{ isset($ultimoEvento) && $ultimoEvento && $ultimoEvento->frequencia_cardiaca > 100 ? 'alert' : 'normal' }}">
+                            {{ isset($ultimoEvento) && $ultimoEvento && $ultimoEvento->frequencia_cardiaca > 100 ? 'Elevada' : 'Normal' }}
+                        </span>
                     </div>
-                    <div class="vital-value"><span id="bpm-value">72</span> <small>bpm</small></div>
+                    <div class="vital-value"><span id="bpm-value">{{ isset($ultimoEvento) && $ultimoEvento ? $ultimoEvento->frequencia_cardiaca : '--' }}</span> <small>bpm</small></div>
                     <p class="vital-label">Frequência Cardíaca</p>
                     <div class="vital-chart-mini" id="heart-mini-chart">
                         <svg viewBox="0 0 200 40" preserveAspectRatio="none">
@@ -90,33 +92,45 @@
                 <div class="vital-card spo2-card">
                     <div class="vital-header">
                         <div class="vital-icon pulse-info"><i data-lucide="droplet"></i></div>
-                        <span class="vital-badge normal">Normal</span>
+                        <span class="vital-badge {{ isset($ultimoEvento) && $ultimoEvento && $ultimoEvento->oxigenacao_spo2 < 94 ? 'alert' : 'normal' }}">
+                            {{ isset($ultimoEvento) && $ultimoEvento && $ultimoEvento->oxigenacao_spo2 < 94 ? 'Baixa' : 'Normal' }}
+                        </span>
                     </div>
-                    <div class="vital-value"><span id="spo2-value">97</span><small>%</small></div>
+                    <div class="vital-value"><span id="spo2-value">{{ isset($ultimoEvento) && $ultimoEvento ? $ultimoEvento->oxigenacao_spo2 : '--' }}</span><small>%</small></div>
                     <p class="vital-label">Oxigenação (SpO2)</p>
                     <div class="vital-range">
-                        <div class="range-bar" style="width: 97%;"></div>
+                        <div class="range-bar" style="width: {{ isset($ultimoEvento) && $ultimoEvento ? $ultimoEvento->oxigenacao_spo2 : 0 }}%;"></div>
                     </div>
                 </div>
                 <div class="vital-card temp-card">
                     <div class="vital-header">
                         <div class="vital-icon pulse-warning"><i data-lucide="thermometer"></i></div>
-                        <span class="vital-badge normal">Normal</span>
+                        <span class="vital-badge {{ isset($ultimoEvento) && $ultimoEvento && $ultimoEvento->temperatura_corporal > 37.5 ? 'alert' : 'normal' }}">
+                            {{ isset($ultimoEvento) && $ultimoEvento && $ultimoEvento->temperatura_corporal > 37.5 ? 'Elevada' : 'Normal' }}
+                        </span>
                     </div>
-                    <div class="vital-value"><span id="temp-value">36.4</span><small>°C</small></div>
+                    <div class="vital-value"><span id="temp-value">{{ isset($ultimoEvento) && $ultimoEvento ? number_format($ultimoEvento->temperatura_corporal, 1, '.', '') : '--' }}</span><small>°C</small></div>
                     <p class="vital-label">Temperatura Corporal</p>
                     <div class="vital-range">
-                        <div class="range-bar warning-range" style="width: 60%;"></div>
+                        @php
+                            $tempPercent = isset($ultimoEvento) && $ultimoEvento ? round(($ultimoEvento->temperatura_corporal - 35) / 4 * 100) : 0;
+                        @endphp
+                        <div class="range-bar warning-range" style="width: {{ min(100, max(0, $tempPercent)) }}%;"></div>
                     </div>
                 </div>
                 <div class="vital-card fall-card">
                     <div class="vital-header">
                         <div class="vital-icon pulse-danger"><i data-lucide="person-standing"></i></div>
-                        <span class="vital-badge ok">Seguro</span>
+                        <span class="vital-badge {{ isset($quedasHoje) && $quedasHoje > 0 ? 'alert' : 'ok' }}">{{ isset($quedasHoje) && $quedasHoje > 0 ? 'Alerta' : 'Seguro' }}</span>
                     </div>
-                    <div class="vital-value"><span>0</span></div>
+                    <div class="vital-value"><span>{{ $quedasHoje ?? 0 }}</span></div>
                     <p class="vital-label">Quedas Detectadas Hoje</p>
-                    <p class="vital-sub">Última queda: <strong>Nenhuma registrada</strong></p>
+                    <p class="vital-sub">Última queda: <strong>
+                        @php
+                            $ultimaQueda = isset($eventos) ? $eventos->firstWhere('categoria_evento', 'Queda') : null;
+                        @endphp
+                        {{ $ultimaQueda ? $ultimaQueda->data_hora_registro->format('d/m/Y, H:i') : 'Nenhuma registrada' }}
+                    </strong></p>
                 </div>
             </div>
 
@@ -124,15 +138,15 @@
             <div class="map-section">
                 <div class="map-header">
                     <h3><i data-lucide="map-pin"></i> Localização Atual</h3>
-                    <span class="map-timestamp">Atualizado há 30s</span>
+                    <span class="map-timestamp">Atualizado {{ isset($dispositivo) && $dispositivo ? $dispositivo->tempo_ultimo_sinal : 'N/A' }}</span>
                 </div>
                 <div class="map-container">
                     <div class="map-placeholder">
                         <div class="map-pin-animated">
                             <i data-lucide="map-pin"></i>
                         </div>
-                        <p>Rua das Flores, 123 — São Paulo, SP</p>
-                        <span>Localização aproximada via Wi-Fi</span>
+                        <p>{{ isset($ultimoEvento) && $ultimoEvento ? $ultimoEvento->localizacao_endereco : 'Localização não disponível' }}</p>
+                        <span>Localização aproximada via {{ isset($dispositivo) && $dispositivo ? $dispositivo->tipo_conexao : 'N/A' }}</span>
                     </div>
                 </div>
             </div>
@@ -193,46 +207,23 @@
                 <button class="ef-btn">SpO2</button>
             </div>
             <div class="event-list">
-                <div class="event-item event-info">
-                    <div class="event-icon"><i data-lucide="heart-pulse"></i></div>
+                @if(isset($eventos))
+                @foreach($eventos as $evento)
+                <div class="event-item {{ $evento->categoria_css_class }}">
+                    <div class="event-icon"><i data-lucide="{{ $evento->categoria_icone }}"></i></div>
                     <div class="event-content">
-                        <h4>Frequência cardíaca elevada detectada</h4>
-                        <p>Batimento registrado: <strong>112 bpm</strong> durante 3 minutos.</p>
+                        <h4>{{ $evento->categoria_evento }}: {{ Str::limit($evento->descricao_evento, 80) }}</h4>
+                        <p>
+                            FC: <strong>{{ $evento->frequencia_cardiaca }} bpm</strong> |
+                            SpO2: <strong>{{ $evento->oxigenacao_spo2 }}%</strong> |
+                            Temp: <strong>{{ number_format($evento->temperatura_corporal, 1, '.', '') }}°C</strong>
+                            @if($evento->quedas_detectadas > 0) | Quedas: <strong>{{ $evento->quedas_detectadas }}</strong> @endif
+                        </p>
                     </div>
-                    <span class="event-time">Hoje, 14:32</span>
+                    <span class="event-time">{{ $evento->data_hora_registro->format('d/m/Y, H:i') }}</span>
                 </div>
-                <div class="event-item event-warning">
-                    <div class="event-icon"><i data-lucide="thermometer"></i></div>
-                    <div class="event-content">
-                        <h4>Temperatura levemente elevada</h4>
-                        <p>Registrado <strong>37.6°C</strong>. Monitoramento contínuo ativado.</p>
-                    </div>
-                    <span class="event-time">Ontem, 22:15</span>
-                </div>
-                <div class="event-item event-danger">
-                    <div class="event-icon"><i data-lucide="person-standing"></i></div>
-                    <div class="event-content">
-                        <h4>Queda detectada e alerta enviado</h4>
-                        <p>Queda registrada às 08:42. Contatos Mariana e Carlos notificados via SMS e ligação.</p>
-                    </div>
-                    <span class="event-time">03/05/2026, 08:42</span>
-                </div>
-                <div class="event-item event-success">
-                    <div class="event-icon"><i data-lucide="check-circle"></i></div>
-                    <div class="event-content">
-                        <h4>Dispositivo reconectado com sucesso</h4>
-                        <p>O colete foi reconectado à rede Wi-Fi "Casa_Mendes".</p>
-                    </div>
-                    <span class="event-time">02/05/2026, 10:00</span>
-                </div>
-                <div class="event-item event-info">
-                    <div class="event-icon"><i data-lucide="droplet"></i></div>
-                    <div class="event-content">
-                        <h4>SpO2 abaixo do ideal por breve período</h4>
-                        <p>Oxigenação registrada em <strong>93%</strong> por 2 minutos. Voltou ao normal.</p>
-                    </div>
-                    <span class="event-time">01/05/2026, 03:18</span>
-                </div>
+                @endforeach
+                @endif
             </div>
         </section>
 
@@ -299,9 +290,9 @@
                     <div class="setting-row">
                         <label>Notificar via:</label>
                         <div class="notify-methods">
-                            <label class="chip active"><input type="checkbox" checked> Push</label>
-                            <label class="chip active"><input type="checkbox" checked> SMS</label>
-                            <label class="chip"><input type="checkbox"> Ligação</label>
+                            <label class="chip {{ isset($usuario) && $usuario->notificar_push ? 'active' : '' }}"><input type="checkbox" {{ isset($usuario) && $usuario->notificar_push ? 'checked' : '' }}> Push</label>
+                            <label class="chip {{ isset($usuario) && $usuario->notificar_sms ? 'active' : '' }}"><input type="checkbox" {{ isset($usuario) && $usuario->notificar_sms ? 'checked' : '' }}> SMS</label>
+                            <label class="chip {{ isset($usuario) && $usuario->notificar_ligacao ? 'active' : '' }}"><input type="checkbox" {{ isset($usuario) && $usuario->notificar_ligacao ? 'checked' : '' }}> Ligação</label>
                         </div>
                     </div>
                     <div class="setting-toggle">
@@ -318,15 +309,20 @@
             <h2>Contatos de Emergência</h2>
             <p class="section-desc">As pessoas listadas abaixo serão notificadas automaticamente em caso de alerta.</p>
             <div class="contacts-list">
+                @if(isset($cuidadores))
+                @foreach($cuidadores as $c)
                 <div class="contact-card">
-                    <div class="contact-avatar">M</div>
+                    <div class="contact-avatar">{{ substr($c->nome, 0, 1) }}</div>
                     <div class="contact-info">
-                        <h4>Mariana Silva</h4>
-                        <p>(11) 98765-4321</p>
+                        <h4>{{ $c->nome }}</h4>
+                        <p>{{ $c->telefone }} @if($c->parentesco) — {{ $c->parentesco }} @endif</p>
                         <div class="contact-methods">
-                            <span class="chip active">Push</span>
-                            <span class="chip active">SMS</span>
-                            <span class="chip active">Ligação</span>
+                            @php
+                                $u = $c->usuario;
+                            @endphp
+                            @if($u && $u->notificar_push)<span class="chip active">Push</span>@endif
+                            @if($u && $u->notificar_sms)<span class="chip active">SMS</span>@endif
+                            @if($u && $u->notificar_ligacao)<span class="chip active">Ligação</span>@endif
                         </div>
                     </div>
                     <div class="contact-actions">
@@ -334,21 +330,8 @@
                         <button class="icon-btn danger"><i data-lucide="trash-2"></i></button>
                     </div>
                 </div>
-                <div class="contact-card">
-                    <div class="contact-avatar" style="background: var(--info);">C</div>
-                    <div class="contact-info">
-                        <h4>Carlos Mendes</h4>
-                        <p>(11) 91234-5678</p>
-                        <div class="contact-methods">
-                            <span class="chip active">Push</span>
-                            <span class="chip active">SMS</span>
-                        </div>
-                    </div>
-                    <div class="contact-actions">
-                        <button class="icon-btn"><i data-lucide="pencil"></i></button>
-                        <button class="icon-btn danger"><i data-lucide="trash-2"></i></button>
-                    </div>
-                </div>
+                @endforeach
+                @endif
             </div>
             <button class="btn btn-outline mt-4" id="add-contact-btn"><i data-lucide="plus"></i> Adicionar Contato</button>
         </section>

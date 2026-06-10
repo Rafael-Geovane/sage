@@ -1,0 +1,51 @@
+﻿"ID Dispositivo";Paciente;Data/Hora;"Freq. Cardíaca (BPM)";"SpO2 (%)";"Temperatura (°C)";"Quedas Detectadas";"Categoria do Evento";Status
+SGE-0087;"Maria Santos";"10/06/2026 02:00:42";68;96;36,1;0;Monitoramento;Normal
+SGE-0098;"Zilda Nunes";"10/06/2026 12:00:42";76;94;36,9;0;Monitoramento;Normal
+SGE-0092;"Zilda Nunes";"09/06/2026 20:00:42";85;94;36,0;0;Monitoramento;Normal
+SGE-0062;"Helena Costa";"09/06/2026 12:00:42";105;92;37,3;1;Queda;Alerta
+SGE-0084;"Antônio Rocha";"10/06/2026 06:00:42";132;96;37,4;0;"Alerta Cardíaco";Alerta
+SGE-0086;"Helena Costa";"08/06/2026 19:00:42";100;93;36,9;0;Monitoramento;Alerta
+SGE-0053;"João Oliveira";"10/06/2026 10:00:42";89;99;36,7;0;Monitoramento;Normal
+SGE-0017;"João Oliveira";"10/06/2026 07:00:42";86;98;35,9;0;Monitoramento;Normal
+SGE-0082;"Zilda Nunes";"10/06/2026 07:00:42";86;96;37,3;1;Queda;Alerta
+SGE-0079;"Maria Santos";"09/06/2026 09:00:42";129;98;36,2;0;"Alerta Cardíaco";Alerta
+SGE-0035;"Maria Santos";"09/06/2026 05:00:42";98;96;37,2;0;Monitoramento;Normal
+SGE-0013;"Zilda Nunes";"10/06/2026 13:00:42";77;97;35,8;0;Monitoramento;Normal
+SGE-0081;"Antônio Rocha";"09/06/2026 01:00:42";135;93;35,8;0;"Alerta Cardíaco";Alerta
+SGE-0069;"Antônio Rocha";"09/06/2026 02:00:42";115;93;35,9;0;"Alerta Cardíaco";Alerta
+SGE-0041;"João Oliveira";"09/06/2026 13:00:42";109;94;37,3;1;Queda;Alerta
+SGE-0024;"Maria Santos";"10/06/2026 12:00:42";90;98;36,4;1;Queda;Alerta
+SGE-0056;"Maria Santos";"09/06/2026 10:00:42";138;98;35,9;0;"Alerta Cardíaco";Alerta
+SGE-0054;"Helena Costa";"10/06/2026 05:00:42";102;99;37,2;0;Monitoramento;Alerta
+SGE-0092;"Maria Santos";"10/06/2026 13:00:42";84;95;36,7;1;Queda;Alerta
+SGE-0065;"Antônio Rocha";"09/06/2026 05:00:42";111;94;36,4;0;"Alerta Cardíaco";Alerta
+SGE-0046;"Zilda Nunes";"08/06/2026 19:00:42";137;97;36,7;0;"Alerta Cardíaco";Alerta
+SGE-0078;"Maria Santos";"09/06/2026 04:00:42";82;94;35,9;1;Queda;Alerta
+SGE-0013;"Maria Santos";"10/06/2026 11:00:42";104;99;36,9;0;Monitoramento;Alerta
+SGE-0018;"Maria Santos";"10/06/2026 05:00:42";90;96;37,2;0;Monitoramento;Normal
+SGE-0018;"Helena Costa";"10/06/2026 15:00:42";139;96;37,4;0;"Alerta Cardíaco";Alerta
+SGE-0077;"Helena Costa";"10/06/2026 06:00:42";85;97;37,2;0;Monitoramento;Normal
+SGE-0019;"Maria Santos";"10/06/2026 00:00:42";103;93;36,5;0;Monitoramento;Alerta
+SGE-0087;"Zilda Nunes";"10/06/2026 06:00:42";100;98;36,8;0;Monitoramento;Normal
+SGE-0016;"Antônio Rocha";"09/06/2026 17:00:42";99;94;36,6;0;Monitoramento;Normal
+SGE-0061;"Helena Costa";"08/06/2026 23:00:42";92;92;35,9;0;Monitoramento;Alerta
+SGE-0093;"João Oliveira";"09/06/2026 00:00:42";74;99;36,3;0;Monitoramento;Normal
+SGE-0054;"Helena Costa";"09/06/2026 07:00:42";84;92;36,1;1;Queda;Alerta
+SGE-0060;"Antônio Rocha";"10/06/2026 14:00:42";94;97;36,8;1;Queda;Alerta
+SGE-0032;"Helena Costa";"10/06/2026 15:00:42";135;96;36,8;0;"Alerta Cardíaco";Alerta
+SGE-0028;"Antônio Rocha";"10/06/2026 09:00:42";139;94;36,2;0;"Alerta Cardíaco";Alerta
+SGE-0015;"João Oliveira";"10/06/2026 15:00:42";127;96;36,6;0;"Alerta Cardíaco";Alerta
+SGE-0040;"Zilda Nunes";"10/06/2026 17:00:42";73;94;37,3;1;Queda;Alerta
+SGE-0032;"Maria Santos";"09/06/2026 07:00:42";139;92;37,5;0;"Alerta Cardíaco";Alerta
+SGE-0071;"Zilda Nunes";"08/06/2026 21:00:42";80;99;37,5;1;Queda;Alerta
+SGE-0048;"Antônio Rocha";"10/06/2026 11:00:42";82;99;36,2;0;Monitoramento;Normal
+SGE-0011;"Maria Santos";"09/06/2026 14:00:42";65;98;37,5;0;Monitoramento;Normal
+SGE-0020;"Helena Costa";"10/06/2026 10:00:42";72;96;36,2;0;Monitoramento;Normal
+SGE-0018;"João Oliveira";"10/06/2026 09:00:42";65;97;36,4;0;Monitoramento;Normal
+SGE-0055;"Zilda Nunes";"09/06/2026 15:00:42";96;94;37,5;0;Monitoramento;Normal
+SGE-0082;"Zilda Nunes";"10/06/2026 00:00:42";121;92;37,1;0;"Alerta Cardíaco";Alerta
+SGE-0091;"Antônio Rocha";"10/06/2026 03:00:42";97;98;36,4;0;Monitoramento;Normal
+SGE-0098;"João Oliveira";"10/06/2026 06:00:42";106;95;37,0;0;Monitoramento;Alerta
+SGE-0088;"João Oliveira";"09/06/2026 20:00:42";108;98;35,9;0;Monitoramento;Alerta
+SGE-0094;"Helena Costa";"10/06/2026 03:00:42";61;98;36,2;0;Monitoramento;Normal
+SGE-0021;"Zilda Nunes";"09/06/2026 22:00:42";64;93;36,0;0;Monitoramento;Alerta
