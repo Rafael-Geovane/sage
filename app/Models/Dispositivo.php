@@ -39,6 +39,14 @@ class Dispositivo extends Model
     }
 
     /**
+     * Leituras de sensores recebidas deste dispositivo.
+     */
+    public function leiturasSensor(): HasMany
+    {
+        return $this->hasMany(LeituraSensor::class, 'id_dispositivo', 'id_dispositivo');
+    }
+
+    /**
      * Verifica se o dispositivo está online.
      */
     public function getIsOnlineAttribute(): bool

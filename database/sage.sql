@@ -26,6 +26,10 @@ CREATE TABLE usuario (
     notificar_sms         BOOLEAN      DEFAULT FALSE,
     notificar_ligacao     BOOLEAN      DEFAULT FALSE,
     id_admin_responsavel  INT          NULL,          -- admin que cadastrou/gerencia
+    tipo_sanguineo        VARCHAR(10)  NULL,
+    condicoes_medicas     VARCHAR(500) NULL,
+    alergias              VARCHAR(500) NULL,
+    medicamentos          VARCHAR(500) NULL,
     criado_em             TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_usuario_admin
@@ -226,3 +230,43 @@ INSERT INTO evento_saude (frequencia_cardiaca, oxigenacao_spo2, temperatura_corp
 
 -- Usuário 5 — Zilda (SGE-0241 — offline)
 (74,  97, 36.5, 0, 'Rua Sete de Setembro, 88 — Recife, PE',   'Monitoramento',    'Último registro antes do dispositivo ficar offline.',               5, 5, '2026-06-10 03:05:00');
+
+
+-- ============================================================
+-- 8. LEITURA_SENSOR (dados crus do colete IoT)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS leitura_sensor (
+    id_leitura            INT PRIMARY KEY AUTO_INCREMENT,
+    id_dispositivo        INT NOT NULL,
+    id_usuario            INT NULL,
+    payload               JSON NULL,
+    frequencia_cardiaca   INT NULL,
+    oxigenacao_spo2       INT NULL,
+    temperatura_corporal  DECIMAL(4,1) NULL,
+    acelerometro_x        DECIMAL(8,3) NULL,
+    acelerometro_y        DECIMAL(8,3) NULL,
+    acelerometro_z        DECIMAL(8,3) NULL,
+    giroscopio_x          DECIMAL(8,3) NULL,
+    giroscopio_y          DECIMAL(8,3) NULL,
+    giroscopio_z          DECIMAL(8,3) NULL,
+    latitude              DECIMAL(10,7) NULL,
+    longitude             DECIMAL(10,7) NULL,
+    nivel_bateria         INT NULL,
+    queda_detectada       BOOLEAN DEFAULT FALSE,
+    timestamp_sensor      DATETIME NULL,
+    recebido_em           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_leitura_dispositivo
+        FOREIGN KEY (id_dispositivo) REFERENCES dispositivo (id_dispositivo)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_leitura_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
+        ON DELETE SET NULL,
+
+    INDEX idx_disp_recebido (id_dispositivo, recebido_em),
+    INDEX idx_user_recebido (id_usuario, recebido_em)
+);
+
+-- Tabela preparada para receber dados JSON do colete.
+-- Os dados chegarão zerados para novos dispositivos e serão preenchidos
+-- quando o colete começar a transmitir via POST /api/sensores/ingest.

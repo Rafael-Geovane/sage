@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="/assets/css/styles.css">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="admin-page">
 
@@ -142,7 +143,12 @@
         <!-- Admin: Users -->
         <section class="dash-section" id="section-admin-users">
             <div class="section-top-bar">
-                <h2>Gestão de Usuários</h2>
+                <div style="display:flex; align-items:center; gap:16px;">
+                    <h2>Gestão de Usuários</h2>
+                    <button class="btn btn-primary" id="new-account-btn" style="white-space:nowrap;">
+                        <i data-lucide="user-plus"></i> Nova Conta
+                    </button>
+                </div>
                 <div class="search-bar">
                     <i data-lucide="search"></i>
                     <input type="text" placeholder="Buscar por nome ou e-mail..." class="input-field" id="user-search">
@@ -174,7 +180,10 @@
                                 @endif
                             </td>
                             <td>{{ $u->dispositivo->tempo_ultimo_sinal ?? '—' }}</td>
-                            <td><button class="icon-btn sm"><i data-lucide="eye"></i></button></td>
+                            <td>
+                                <button class="icon-btn sm edit-user-btn" data-id="{{ $u->id_usuario }}"><i data-lucide="pencil"></i></button>
+                                <button class="icon-btn sm view-user-btn" data-id="{{ $u->id_usuario }}"><i data-lucide="eye"></i></button>
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -236,7 +245,7 @@
                 </div>
             </div>
             <div class="data-table-wrapper">
-                <table class="data-table">
+                <table class="data-table" id="pedidos-table">
                     <thead>
                         <tr>
                             <th>Pedido</th>
@@ -245,17 +254,19 @@
                             <th>Valor</th>
                             <th>Pagamento</th>
                             <th>Status</th>
+                            <th>Ação</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($pedidos as $p)
-                        <tr>
+                        <tr data-pedido-id="{{ $p->id_pedido }}">
                             <td class="mono">{{ $p->numero_pedido }}</td>
                             <td>{{ $p->usuario->nome }}</td>
                             <td><span class="plan-tag {{ $p->usuario->plano_css_class }}">{{ $p->usuario->nome_plano ?? 'N/A' }}</span></td>
                             <td>{{ $p->valor }}</td>
                             <td>{{ $p->forma_pagamento }}</td>
                             <td><span class="status-pill {{ $p->status_css_class }}">{{ $p->status }}</span></td>
+                            <td><button class="icon-btn sm edit-pedido-btn" data-id="{{ $p->id_pedido }}" title="Gerenciar pedido"><i data-lucide="pencil"></i></button></td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -311,7 +322,7 @@
                 <div class="kpi-card"><div class="kpi-data"><h3>2h 15m</h3><p>Tempo Médio de Resposta</p></div></div>
             </div>
             <div class="data-table-wrapper">
-                <table class="data-table">
+                <table class="data-table" id="tickets-table">
                     <thead>
                         <tr>
                             <th>Ticket</th>
@@ -324,13 +335,16 @@
                     </thead>
                     <tbody>
                         @foreach($tickets as $t)
-                        <tr>
+                        <tr data-ticket-id="{{ $t->id_ticket }}">
                             <td class="mono">{{ $t->numero_ticket }}</td>
                             <td>{{ $t->usuario->nome }}</td>
                             <td>{{ $t->assunto }}</td>
                             <td><span class="priority-tag {{ $t->prioridade_css_class }}">{{ $t->prioridade }}</span></td>
                             <td><span class="status-pill {{ $t->status_css_class }}">{{ $t->status }}</span></td>
-                            <td><button class="icon-btn sm"><i data-lucide="message-square"></i></button></td>
+                            <td>
+                                <button class="icon-btn sm view-ticket-btn" data-id="{{ $t->id_ticket }}" title="Ver detalhes"><i data-lucide="message-square"></i></button>
+                                <button class="icon-btn sm delete-ticket-btn" data-id="{{ $t->id_ticket }}" title="Excluir ticket"><i data-lucide="trash-2"></i></button>
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -339,7 +353,320 @@
         </section>
     </div>
 
-    <script src="../script.js"></script>
+    <!-- User Edit Modal -->
+    <div id="user-edit-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Usuário</h3>
+                <button id="close-user-modal" class="close-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="user-edit-form">
+                    <input type="hidden" id="edit-user-id">
+                    <div class="form-group">
+                        <label for="edit-user-name">Nome</label>
+                        <input type="text" id="edit-user-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-user-email">E-mail</label>
+                        <input type="email" id="edit-user-email">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-user-phone">Telefone</label>
+                        <input type="tel" id="edit-user-phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-user-cpf">CPF</label>
+                        <input type="text" id="edit-user-cpf">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-user-dob">Data de Nascimento</label>
+                        <input type="date" id="edit-user-dob">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-user-plan">Plano</label>
+                        <select id="edit-user-plan" class="input-field">
+                            <option value="Básico">Básico</option>
+                            <option value="Premium">Premium</option>
+                            <option value="HaaS">HaaS</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Notificações Ativas</label>
+                        <div class="notify-methods">
+                            <label class="chip"><input type="checkbox" id="edit-user-push"> Push</label>
+                            <label class="chip"><input type="checkbox" id="edit-user-sms"> SMS</label>
+                            <label class="chip"><input type="checkbox" id="edit-user-ligacao"> Ligação</label>
+                        </div>
+                    </div>
+                    <div class="contact-modal-actions" style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px;">
+                        <button type="button" class="btn btn-outline" id="cancel-user-modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- User View Modal -->
+    <div id="user-view-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Detalhes do Usuário</h3>
+                <button id="close-user-view-modal" class="close-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="user-view-grid" style="display:grid; gap:16px;">
+                    <div style="display:flex; align-items:center; gap:16px; margin-bottom:8px;">
+                        <div class="user-avatar" id="view-user-avatar" style="width:56px; height:56px; font-size:1.2rem;"></div>
+                        <div>
+                            <h3 id="view-user-name" style="margin:0;"></h3>
+                            <span id="view-user-plan-tag" class="plan-tag" style="margin-top:4px; display:inline-block;"></span>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div class="form-group"><label>CPF</label><p id="view-user-cpf" class="view-field"></p></div>
+                        <div class="form-group"><label>Data de Nascimento</label><p id="view-user-dob" class="view-field"></p></div>
+                        <div class="form-group"><label>E-mail</label><p id="view-user-email" class="view-field"></p></div>
+                        <div class="form-group"><label>Telefone</label><p id="view-user-phone" class="view-field"></p></div>
+                        <div class="form-group" style="grid-column: span 2;"><label>Endereço</label><p id="view-user-address" class="view-field"></p></div>
+                    </div>
+                    <div>
+                        <label>Notificações</label>
+                        <div id="view-user-notifications" style="display:flex; gap:8px; margin-top:4px;"></div>
+                    </div>
+                    <div>
+                        <label>Dispositivo Vinculado</label>
+                        <div id="view-user-device" class="view-field" style="margin-top:4px;"></div>
+                    </div>
+                    <div>
+                        <label>Cuidadores</label>
+                        <div id="view-user-cuidadores" style="margin-top:4px;"></div>
+                    </div>
+                </div>
+                <div class="contact-modal-actions" style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px;">
+                    <button type="button" class="btn btn-outline" id="close-user-view-btn">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Modal -->
+    <div id="ticket-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Detalhes do Ticket</h3>
+                <button id="close-ticket-modal" class="close-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div style="display:grid; gap:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h4 id="ticket-modal-number" class="mono" style="margin:0;"></h4>
+                        <span id="ticket-modal-priority" class="priority-tag"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <p id="ticket-modal-client" class="view-field"></p>
+                    </div>
+                    <div class="form-group">
+                        <label>Assunto</label>
+                        <p id="ticket-modal-subject" class="view-field"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="ticket-modal-status-select">Status</label>
+                        <select id="ticket-modal-status-select" class="input-field">
+                            <option value="Aguardando">Aguardando</option>
+                            <option value="Em Andamento">Em Andamento</option>
+                            <option value="Respondido">Respondido</option>
+                            <option value="Fechado">Fechado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ticket-modal-priority-select">Prioridade</label>
+                        <select id="ticket-modal-priority-select" class="input-field">
+                            <option value="Alta">Alta</option>
+                            <option value="Média">Média</option>
+                            <option value="Baixa">Baixa</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="ticket-modal-id">
+                </div>
+                <div class="contact-modal-actions" style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px;">
+                    <button type="button" class="btn btn-outline" id="cancel-ticket-modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-ticket-btn">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pedido Modal -->
+    <div id="pedido-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Detalhes do Pedido</h3>
+                <button id="close-pedido-modal" class="close-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div style="display:grid; gap:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h4 id="pedido-modal-number" class="mono" style="margin:0;"></h4>
+                        <span id="pedido-modal-status-tag" class="status-pill"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <p id="pedido-modal-client" class="view-field"></p>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <p id="pedido-modal-valor" class="view-field"></p>
+                    </div>
+                    <div class="form-group">
+                        <label>Forma de Pagamento</label>
+                        <p id="pedido-modal-payment" class="view-field"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="pedido-modal-status-select">Status</label>
+                        <select id="pedido-modal-status-select" class="input-field">
+                            <option value="Pend. Pagamento">Pend. Pagamento</option>
+                            <option value="Enviado">Enviado</option>
+                            <option value="Entregue">Entregue</option>
+                            <option value="Cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="pedido-modal-id">
+                </div>
+                <div class="contact-modal-actions" style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px;">
+                    <button type="button" class="btn btn-outline" id="cancel-pedido-modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-pedido-btn">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Account Modal -->
+    <div id="new-account-modal" class="modal-overlay hidden">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3><i data-lucide="user-plus"></i> Criar Nova Conta</h3>
+                <button id="close-new-account-modal" class="close-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="new-account-form">
+                    <!-- Seção: Dados do Idoso -->
+                    <div class="form-section">
+                        <h4 class="form-section-title"><i data-lucide="heart"></i> Dados do Idoso</h4>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="new-nome">Nome Completo *</label>
+                                <input type="text" id="new-nome" placeholder="Nome completo do idoso" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-cpf">CPF</label>
+                                <input type="text" id="new-cpf" placeholder="000.000.000-00" maxlength="14">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-email">E-mail</label>
+                                <input type="email" id="new-email" placeholder="email@exemplo.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-telefone">Telefone</label>
+                                <input type="tel" id="new-telefone" placeholder="(11) 91234-5678">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-nascimento">Data de Nascimento</label>
+                                <input type="date" id="new-nascimento">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-plano">Plano</label>
+                                <select id="new-plano" class="input-field">
+                                    <option value="Básico">Básico</option>
+                                    <option value="Premium">Premium</option>
+                                    <option value="HaaS">HaaS</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label for="new-endereco">Endereço</label>
+                                <input type="text" id="new-endereco" placeholder="Rua, número — Cidade, UF">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Dados do Responsável -->
+                    <div class="form-section">
+                        <h4 class="form-section-title"><i data-lucide="shield"></i> Dados do Responsável / Cuidador</h4>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="new-resp-nome">Nome do Responsável</label>
+                                <input type="text" id="new-resp-nome" placeholder="Nome completo">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-resp-telefone">Telefone do Responsável</label>
+                                <input type="tel" id="new-resp-telefone" placeholder="(11) 98765-4321">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-resp-email">E-mail do Responsável</label>
+                                <input type="email" id="new-resp-email" placeholder="responsavel@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-resp-parentesco">Parentesco</label>
+                                <select id="new-resp-parentesco" class="input-field">
+                                    <option value="">Selecione...</option>
+                                    <option value="Filho(a)">Filho(a)</option>
+                                    <option value="Cônjuge">Cônjuge</option>
+                                    <option value="Irmão(ã)">Irmão(ã)</option>
+                                    <option value="Neto(a)">Neto(a)</option>
+                                    <option value="Sobrinho(a)">Sobrinho(a)</option>
+                                    <option value="Amigo(a)">Amigo(a)</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Dispositivo -->
+                    <div class="form-section">
+                        <h4 class="form-section-title"><i data-lucide="cpu"></i> Dispositivo (Colete)</h4>
+                        <div id="device-serial-list">
+                            <div class="device-serial-row">
+                                <div class="form-group" style="flex:1;">
+                                    <label>Código Serial do Dispositivo</label>
+                                    <input type="text" class="device-serial-input" placeholder="Ex: SGE-0100">
+                                </div>
+                                <button type="button" class="icon-btn danger remove-device-row" style="margin-top:24px; visibility:hidden;">
+                                    <i data-lucide="trash-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline btn-sm" id="add-device-serial-btn" style="margin-top:8px;">
+                            <i data-lucide="plus"></i> Adicionar Outro Dispositivo
+                        </button>
+                        <p class="form-hint">Os dados dos sensores chegarão zerados. Serão preenchidos quando o colete começar a transmitir.</p>
+                    </div>
+
+                    <!-- Seção: Notificações -->
+                    <div class="form-section">
+                        <h4 class="form-section-title"><i data-lucide="bell-ring"></i> Notificações</h4>
+                        <div class="notify-methods">
+                            <label class="chip"><input type="checkbox" id="new-push"> Push</label>
+                            <label class="chip"><input type="checkbox" id="new-sms"> SMS</label>
+                            <label class="chip"><input type="checkbox" id="new-ligacao"> Ligação</label>
+                        </div>
+                    </div>
+
+                    <p id="new-account-error" class="error-msg hidden">Erro ao criar conta. Verifique os campos.</p>
+
+                    <div class="contact-modal-actions" style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+                        <button type="button" class="btn btn-outline" id="cancel-new-account">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="submit-new-account">
+                            <i data-lucide="check"></i> Criar Conta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ asset('script.js') }}"></script>
     <script>
         lucide.createIcons();
     </script>

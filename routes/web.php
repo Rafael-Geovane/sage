@@ -1,8 +1,12 @@
-<?php
+ <?php
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DispositivoController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\SensorController;
+use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,5 +39,31 @@ Route::prefix('api')->group(function () {
 
     // Cuidadores de um usuário
     Route::post('/usuarios/{usuarioId}/cuidadores', [UsuarioController::class, 'storeCuidador']);
+    Route::get('/usuarios/{usuarioId}/cuidadores/{cuidadorId}', [UsuarioController::class, 'showCuidador']);
+    Route::put('/usuarios/{usuarioId}/cuidadores/{cuidadorId}', [UsuarioController::class, 'updateCuidador']);
     Route::delete('/usuarios/{usuarioId}/cuidadores/{cuidadorId}', [UsuarioController::class, 'destroyCuidador']);
+
+    // Tickets (CRUD)
+    Route::get('/tickets', [TicketController::class, 'index']);
+    Route::post('/tickets', [TicketController::class, 'store']);
+    Route::get('/tickets/{id}', [TicketController::class, 'show']);
+    Route::put('/tickets/{id}', [TicketController::class, 'update']);
+    Route::delete('/tickets/{id}', [TicketController::class, 'destroy']);
+
+    // Pedidos
+    Route::get('/pedidos', [PedidoController::class, 'index']);
+    Route::get('/pedidos/{id}', [PedidoController::class, 'show']);
+    Route::put('/pedidos/{id}', [PedidoController::class, 'update']);
+
+    // Dispositivos (CRUD completo)
+    Route::get('/dispositivos', [DispositivoController::class, 'index']);
+    Route::post('/dispositivos', [DispositivoController::class, 'store']);
+    Route::get('/dispositivos/{id}', [DispositivoController::class, 'show']);
+    Route::put('/dispositivos/{id}', [DispositivoController::class, 'update']);
+    Route::delete('/dispositivos/{id}', [DispositivoController::class, 'destroy']);
+
+    // Sensores (ingestão de dados do colete)
+    Route::post('/sensores/ingest', [SensorController::class, 'ingest']);
+    Route::get('/sensores/{dispositivoId}/ultimas', [SensorController::class, 'ultimas']);
 });
+

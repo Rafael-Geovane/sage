@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Representa um cuidador (contato de emergência) vinculado a um usuário.
+ */
 class Cuidador extends Model
 {
     protected $table = 'cuidador';
@@ -17,7 +20,19 @@ class Cuidador extends Model
         'email',
         'parentesco',
         'id_usuario',
+        'notificar_push',
+        'notificar_sms',
+        'notificar_ligacao',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'notificar_push'    => 'boolean',
+            'notificar_sms'     => 'boolean',
+            'notificar_ligacao' => 'boolean',
+        ];
+    }
 
     /**
      * Usuário ao qual este cuidador está vinculado.

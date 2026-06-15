@@ -7,11 +7,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * Representa um usuário (paciente) que utiliza o dispositivo Sage.
+ */
 class Usuario extends Model
 {
     protected $table = 'usuario';
     protected $primaryKey = 'id_usuario';
     public $timestamps = false;
+    protected $appends = ['iniciais', 'plano_css_class'];
 
     protected $fillable = [
         'nome',
@@ -25,6 +29,10 @@ class Usuario extends Model
         'notificar_sms',
         'notificar_ligacao',
         'id_admin_responsavel',
+        'tipo_sanguineo',
+        'condicoes_medicas',
+        'alergias',
+        'medicamentos',
     ];
 
     protected function casts(): array
@@ -54,11 +62,27 @@ class Usuario extends Model
     }
 
     /**
-     * Dispositivo (colete) vinculado ao usuário.
+     * Dispositivo principal (colete) vinculado ao usuário (HasOne para compatibilidade).
      */
     public function dispositivo(): HasOne
     {
         return $this->hasOne(Dispositivo::class, 'id_usuario', 'id_usuario');
+    }
+
+    /**
+     * Todos os dispositivos vinculados ao usuário (1:N).
+     */
+    public function dispositivos(): HasMany
+    {
+        return $this->hasMany(Dispositivo::class, 'id_usuario', 'id_usuario');
+    }
+
+    /**
+     * Leituras de sensores do colete.
+     */
+    public function leiturasSensor(): HasMany
+    {
+        return $this->hasMany(LeituraSensor::class, 'id_usuario', 'id_usuario');
     }
 
     /**

@@ -10,18 +10,39 @@ class DashboardController extends Controller
     /**
      * Dashboard do cuidador — exibe dados vitais do primeiro usuário (demo).
      */
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        // Em produção, seria o usuário logado. Aqui usamos o primeiro para demo.
-        $usuario = Usuario::with(['dispositivo', 'cuidadores', 'ultimoEvento'])->first();
+        // Pega o cookie diretamente do $_COOKIE pois o Laravel criptografa cookies via middleware
+        // e o frontend gravou o cookie sem criptografia (raw javascript).
+        $email = $_COOKIE['sage_email'] ?? null;
+        if ($email) {
+            $email = urldecode($email); // JavaScript's encodeURIComponent is similar to urlencode
+            $usuario = Usuario::with(['dispositivo', 'dispositivos', 'cuidadores', 'ultimoEvento'])
+                ->where('email', $email)
+                ->first();
+        } else {
+            // Em produção, seria o usuário logado. Aqui usamos o primeiro para demo.
+            $usuario = Usuario::with(['dispositivo', 'dispositivos', 'cuidadores', 'ultimoEvento'])->first();
+        }
 
         if (!$usuario) {
-            return view('dashboard');
+            return view('dashboard', [
+                'usuario' => null,
+                'ultimoEvento' => null,
+                'dispositivo' => null,
+                'dispositivos' => collect(),
+                'cuidadores' => collect(),
+                'eventos' => collect(),
+                'quedasHoje' => 0,
+            ]);
         }
 
         $ultimoEvento = $usuario->ultimoEvento;
         $dispositivo  = $usuario->dispositivo;
+        $dispositivos = $usuario->dispositivos;
         $cuidadores   = $usuario->cuidadores;
+
+        session(['cuidadores_ids' => $cuidadores->pluck('id_cuidador')->toArray()]);
 
         // Eventos de saúde para o log (mais recentes primeiro)
         $eventos = EventoSaude::where('id_usuario', $usuario->id_usuario)
@@ -39,9 +60,11 @@ class DashboardController extends Controller
             'usuario',
             'ultimoEvento',
             'dispositivo',
+            'dispositivos',
             'cuidadores',
             'eventos',
             'quedasHoje',
         ));
     }
 }
+

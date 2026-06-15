@@ -15,6 +15,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <link rel="stylesheet" href="/assets/css/styles.css">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
     <!-- Navbar -->
@@ -35,6 +36,7 @@
             </nav>
             <div style="display: flex; gap: 16px; align-items: center;">
                 <button id="login-btn-nav" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.95rem; cursor: pointer;">Login</button>
+                <button id="register-btn-nav" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.95rem; cursor: pointer;">Criar Conta</button>
                 <a href="{{ route('loja') }}" class="btn btn-primary">Adquirir o Sage</a>
             </div>
         </div>
@@ -304,6 +306,116 @@
                     <p id="login-error" class="error-msg hidden" style="color: var(--danger); font-size: 0.85rem; margin-top: 8px;">Credenciais inválidas.</p>
                     <button type="submit" class="btn btn-primary btn-full mt-4" style="width: 100%;">Entrar</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Crie sua conta</h3>
+                <button id="close-register-modal" class="close-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="register-form">
+                    <!-- Progress Bar -->
+                    <div class="register-progress" style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 0.85rem; color: var(--text-secondary);">
+                        <span id="step1-indicator" style="color: var(--primary); font-weight: bold;">1. Conta</span>
+                        <span id="step2-indicator">2. Paciente</span>
+                        <span id="step3-indicator">3. Ficha Médica</span>
+                    </div>
+
+                    <!-- Step 1: Conta (Cuidador) -->
+                    <div id="register-step-1" class="register-step">
+                        <div class="form-group">
+                            <label for="register-name">Seu Nome (Cuidador/Responsável)</label>
+                            <input type="text" id="register-name" required placeholder="Seu nome completo">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email">E-mail</label>
+                            <input type="email" id="register-email" required placeholder="seu@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Senha</label>
+                            <input type="password" id="register-password" required placeholder="Mínimo 6 caracteres">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password-confirm">Confirmar senha</label>
+                            <input type="password" id="register-password-confirm" required placeholder="Repita a senha">
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label" style="display: flex; gap: 10px; align-items: center;">
+                                <input type="checkbox" id="register-admin">
+                                <span>Quero criar uma conta de administrador (não precisa preencher paciente)</span>
+                            </label>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-full mt-4" id="btn-next-1" style="width: 100%;">Próximo</button>
+                    </div>
+
+                    <!-- Step 2: Paciente (Idoso) -->
+                    <div id="register-step-2" class="register-step" style="display: none;">
+                        <div class="form-group">
+                            <label for="register-paciente-nome">Nome do Paciente (Idoso)</label>
+                            <input type="text" id="register-paciente-nome" placeholder="Nome completo do paciente">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-paciente-cpf">CPF do Paciente</label>
+                            <input type="text" id="register-paciente-cpf" placeholder="000.000.000-00">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-paciente-nascimento">Data de Nascimento</label>
+                            <input type="date" id="register-paciente-nascimento">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-paciente-telefone">Telefone de Contato</label>
+                            <input type="text" id="register-paciente-telefone" placeholder="(11) 90000-0000">
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="button" class="btn btn-outline" id="btn-prev-2" style="flex: 1;">Voltar</button>
+                            <button type="button" class="btn btn-primary" id="btn-next-2" style="flex: 1;">Próximo</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Ficha Médica -->
+                    <div id="register-step-3" class="register-step" style="display: none;">
+                        <div class="form-group">
+                            <label for="register-tipo-sanguineo">Tipo Sanguíneo</label>
+                            <select id="register-tipo-sanguineo" class="input-field" style="width: 100%;">
+                                <option value="">Não sei / Não informar</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-condicoes">Condições Médicas (Ex: Diabetes, Hipertensão)</label>
+                            <textarea id="register-condicoes" rows="2" class="input-field" placeholder="Liste as condições médicas" style="width: 100%; resize: vertical;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-alergias">Alergias</label>
+                            <textarea id="register-alergias" rows="2" class="input-field" placeholder="Medicamentos, alimentos, etc" style="width: 100%; resize: vertical;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-medicamentos">Medicamentos de Uso Contínuo</label>
+                            <textarea id="register-medicamentos" rows="2" class="input-field" placeholder="Liste os medicamentos e horários" style="width: 100%; resize: vertical;"></textarea>
+                        </div>
+
+                        <p id="register-error" class="error-msg hidden" style="color: var(--danger); font-size: 0.85rem; margin-top: 8px;">Preencha todos os campos obrigatórios corretamente.</p>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="button" class="btn btn-outline" id="btn-prev-3" style="flex: 1;">Voltar</button>
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">Criar Conta</button>
+                        </div>
+                    </div>
+                </form>
+                <p class="mt-3" style="font-size: 0.95rem; color: #5b5b5b; text-align: center;">
+                    Já tem conta? <button id="open-login-from-register" class="btn btn-link" type="button" style="padding: 0; border: none; background: transparent; color: inherit; text-decoration: underline; cursor: pointer;">Entrar</button>
+                </p>
             </div>
         </div>
     </div>

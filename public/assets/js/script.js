@@ -249,6 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (bpm) bpm.innerText = 68 + Math.floor(Math.random() * 12);
                 if (spo2) spo2.innerText = 95 + Math.floor(Math.random() * 4);
                 if (temp) temp.innerText = (36.0 + Math.random() * 0.8).toFixed(1);
+                console.log('temp', temp.innerText, 'bpm', bpm.innerText, 'spo2', spo2.innerText);
             }, 3000);
         }
     }

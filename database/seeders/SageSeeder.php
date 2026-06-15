@@ -10,14 +10,14 @@ class SageSeeder extends Seeder
     public function run(): void
     {
         // 1. ADMIN
-        DB::table('admins')->insert([
+        DB::table('admin')->insert([
             ['nome' => 'Carlos Mendes',  'email' => 'carlos.mendes@sage.com.br', 'senha_hash' => bcrypt('admin123'), 'nivel_acesso' => 'superadmin'],
             ['nome' => 'Fernanda Lima',  'email' => 'fernanda.lima@sage.com.br',  'senha_hash' => bcrypt('admin123'), 'nivel_acesso' => 'operador'],
             ['nome' => 'Rafael Souza',   'email' => 'rafael.souza@sage.com.br',   'senha_hash' => bcrypt('admin123'), 'nivel_acesso' => 'operador'],
         ]);
 
         // 2. USUARIO
-        DB::table('usuarios')->insert([
+        DB::table('usuario')->insert([
             [
                 'nome' => 'Maria Aparecida Santos', 'cpf' => '123.456.789-00', 'data_nascimento' => '1948-03-12',
                 'endereco' => 'Rua das Flores, 42 — São Paulo, SP', 'telefone' => '(11) 91234-5678',
@@ -56,7 +56,7 @@ class SageSeeder extends Seeder
         ]);
 
         // 3. CUIDADOR
-        DB::table('cuidadors')->insert([
+        DB::table('cuidador')->insert([
             ['nome' => 'Paulo Santos',    'telefone' => '(11) 98001-1111', 'email' => 'paulo.santos@email.com',    'parentesco' => 'Filho(a)',  'id_usuario' => 1],
             ['nome' => 'Beatriz Santos',  'telefone' => '(11) 98002-2222', 'email' => 'beatriz.santos@email.com',  'parentesco' => 'Cônjuge',   'id_usuario' => 1],
             ['nome' => 'Carla Oliveira',  'telefone' => '(11) 98003-3333', 'email' => 'carla.oliveira@email.com',  'parentesco' => 'Filho(a)',  'id_usuario' => 2],
@@ -67,7 +67,7 @@ class SageSeeder extends Seeder
         ]);
 
         // 4. DISPOSITIVO
-        DB::table('dispositivos')->insert([
+        DB::table('dispositivo')->insert([
             ['codigo_serial' => 'SGE-0042', 'versao_firmware' => 'v2.4.1', 'nivel_bateria' => 87, 'tipo_conexao' => 'Wi-Fi',  'status_conexao' => 'Online',  'tempo_ultimo_sinal' => 'Há 12s',  'id_usuario' => 1],
             ['codigo_serial' => 'SGE-0078', 'versao_firmware' => 'v2.4.1', 'nivel_bateria' => 62, 'tipo_conexao' => 'Wi-Fi',  'status_conexao' => 'Online',  'tempo_ultimo_sinal' => 'Há 1min', 'id_usuario' => 2],
             ['codigo_serial' => 'SGE-0115', 'versao_firmware' => 'v2.3.9', 'nivel_bateria' => 15, 'tipo_conexao' => 'BLE',    'status_conexao' => 'Online',  'tempo_ultimo_sinal' => 'Há 45s',  'id_usuario' => 3],
@@ -76,7 +76,7 @@ class SageSeeder extends Seeder
         ]);
 
         // 5. PEDIDO
-        DB::table('pedidos')->insert([
+        DB::table('pedido')->insert([
             ['numero_pedido' => '#2026-0401', 'valor' => 'R$ 1.299,00', 'forma_pagamento' => 'Pix',     'status' => 'Entregue',        'id_usuario' => 1, 'id_admin_responsavel' => 1],
             ['numero_pedido' => '#2026-0402', 'valor' => 'R$ 149,00',   'forma_pagamento' => 'Cartão',  'status' => 'Entregue',        'id_usuario' => 2, 'id_admin_responsavel' => 1],
             ['numero_pedido' => '#2026-0403', 'valor' => 'R$ 149,00',   'forma_pagamento' => 'Boleto',  'status' => 'Pend. Pagamento', 'id_usuario' => 3, 'id_admin_responsavel' => 2],
@@ -86,7 +86,7 @@ class SageSeeder extends Seeder
         ]);
 
         // 6. TICKET
-        DB::table('tickets')->insert([
+        DB::table('ticket')->insert([
             ['numero_ticket' => '#T-0881', 'assunto' => 'Colete não sincroniza com o app',            'prioridade' => 'Alta',  'status' => 'Em Andamento', 'id_usuario' => 1, 'id_admin_responsavel' => 2],
             ['numero_ticket' => '#T-0882', 'assunto' => 'Dúvida sobre cobrança do plano HaaS',        'prioridade' => 'Baixa', 'status' => 'Respondido',   'id_usuario' => 2, 'id_admin_responsavel' => 2],
             ['numero_ticket' => '#T-0885', 'assunto' => 'Bateria descarregando muito rápido',         'prioridade' => 'Média', 'status' => 'Aguardando',   'id_usuario' => 3, 'id_admin_responsavel' => 3],
@@ -96,7 +96,7 @@ class SageSeeder extends Seeder
         ]);
 
         // 7. EVENTO_SAUDE
-        DB::table('evento_saudes')->insert([
+        DB::table('evento_saude')->insert([
             // Usuário 1 — Maria (SGE-0042)
             ['frequencia_cardiaca' => 72,  'oxigenacao_spo2' => 98, 'temperatura_corporal' => 36.5, 'quedas_detectadas' => 0, 'localizacao_endereco' => 'Rua das Flores, 42 — São Paulo, SP',    'categoria_evento' => 'Monitoramento',   'descricao_evento' => 'Leitura de rotina. Todos os sinais normais.',                       'id_usuario' => 1, 'id_dispositivo' => 1, 'data_hora_registro' => '2026-06-09 08:00:00'],
             ['frequencia_cardiaca' => 110, 'oxigenacao_spo2' => 95, 'temperatura_corporal' => 37.1, 'quedas_detectadas' => 0, 'localizacao_endereco' => 'Rua das Flores, 42 — São Paulo, SP',    'categoria_evento' => 'Alerta Cardíaco', 'descricao_evento' => 'FC elevada detectada. Paciente relatou atividade física leve.',     'id_usuario' => 1, 'id_dispositivo' => 1, 'data_hora_registro' => '2026-06-09 14:32:00'],

@@ -1581,3 +1581,200 @@ footer {
 .form-group input:focus { border-color: var(--primary); }
 .error-msg { text-align: left; }
 .error-msg.hidden { display: none; }
+
+/* ==========================================
+   New Account Modal & Device Management
+   ========================================== */
+
+/* Large modal variant */
+.modal-content.modal-lg {
+    max-width: 680px;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-content.modal-lg::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-content.modal-lg::-webkit-scrollbar-track {
+    background: transparent;
+}
+.modal-content.modal-lg::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 3px;
+}
+
+/* Form sections with divider */
+.form-section {
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.form-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 16px;
+}
+
+.form-section-title i {
+    width: 18px;
+    height: 18px;
+}
+
+/* 2-column form grid */
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+}
+
+@media (max-width: 600px) {
+    .form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+    .form-grid-2 .form-group[style*="grid-column: span 2"] {
+        grid-column: span 1 !important;
+    }
+}
+
+/* Device serial row */
+.device-serial-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.device-serial-row .form-group {
+    margin-bottom: 0;
+}
+
+/* Form selects */
+.form-group select.input-field,
+.form-group select {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: white;
+    font-family: var(--font-primary);
+    outline: none;
+    transition: border-color 0.3s ease;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+}
+
+.form-group select:focus {
+    border-color: var(--primary);
+}
+
+.form-group select option {
+    background: #1a2332;
+    color: white;
+}
+
+/* Form hint text */
+.form-hint {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Small button */
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+/* No data badge */
+.no-data-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Empty state */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    background: var(--bg-card);
+    border: 1px dashed var(--glass-border);
+    border-radius: 16px;
+}
+
+.empty-state h3 {
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Glass background utility */
+.glass-bg {
+    background: rgba(20, 26, 35, 0.6);
+}
+
+/* Modal header icon */
+.modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-header h3 i {
+    width: 20px;
+    height: 20px;
+    color: var(--primary);
+}
+
+/* Button icon alignment */
+.btn i {
+    width: 16px;
+    height: 16px;
+}
+
+.btn-primary i,
+.btn-outline i {
+    margin-right: 6px;
+}
+
+/* Icon button small danger variant */
+.icon-btn.danger {
+    color: var(--danger);
+}
+
+.icon-btn.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+}

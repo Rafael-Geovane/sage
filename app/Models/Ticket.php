@@ -20,6 +20,13 @@ class Ticket extends Model
         'id_admin_responsavel',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'criado_em' => 'datetime',
+        ];
+    }
+
     /**
      * Usuário que abriu o ticket.
      */
