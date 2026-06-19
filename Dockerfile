@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     libzip-dev \
+    libpq-dev \
     unzip \
     git \
     libonig-dev \
@@ -16,7 +17,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Instalar extensões PHP necessárias para o Laravel
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip
 
 # Habilitar o mod_rewrite do Apache
 RUN a2enmod rewrite
