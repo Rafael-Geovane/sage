@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('pedidos', function (Blueprint $table) {
+        Schema::create('pedido', function (Blueprint $table) {
             $table->id('id_pedido');
             $table->string('numero_pedido', 50)->unique();
             $table->string('valor', 30)->nullable();
@@ -20,18 +20,18 @@ return new class extends Migration
 
             $table->foreign('id_usuario')
                   ->references('id_usuario')
-                  ->on('usuarios')
+                  ->on('usuario')
                   ->onDelete('cascade');
 
             $table->foreign('id_admin_responsavel')
                   ->references('id_admin')
-                  ->on('admins')
+                  ->on('admin')
                   ->onDelete('set null');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('pedidos');
+        Schema::dropIfExists('pedido');
     }
 };

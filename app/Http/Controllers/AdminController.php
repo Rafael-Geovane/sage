@@ -6,6 +6,9 @@ use App\Models\Usuario;
 use App\Models\Dispositivo;
 use App\Models\Pedido;
 use App\Models\Ticket;
+use App\Models\Admin;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
@@ -49,5 +52,29 @@ class AdminController extends Controller
             'tickets',
             'ticketsAlta',
         ));
+    }
+
+    /**
+     * Cria uma nova conta de administrador.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'nome' => 'required|string|max:100',
+            'email' => 'required|email|max:150|unique:admin,email',
+            'senha' => 'required|string|min:6',
+        ]);
+
+        $admin = Admin::create([
+            'nome' => $validated['nome'],
+            'email' => $validated['email'],
+            'senha_hash' => Hash::make($validated['senha']),
+            'nivel_acesso' => 'admin',
+        ]);
+
+        return response()->json([
+            'message' => 'Admin criado com sucesso',
+            'admin' => $admin
+        ], 201);
     }
 }

@@ -457,7 +457,7 @@
         </div>
     </footer>
 
-    <script src="{{ asset('script.js') }}"></script>
+    <script src="{{ asset('script.js') }}?v={{ time() }}"></script>
     <script>
         // Initialize Lucide Icons
         lucide.createIcons();

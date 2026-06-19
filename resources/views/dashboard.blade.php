@@ -72,7 +72,7 @@
         <section class="dash-section active" id="section-overview">
             <div class="dash-greeting">
                 <h1>Olá, {{ $usuario->nome ?? 'Cuidador' }} 👋</h1>
-                <p>Último dado recebido: <strong>{{ $ultimoEvento ? $ultimoEvento->data_hora_registro->diffForHumans() : 'Sem dados recentes' }}</strong></p>
+                <p>Último dado recebido: <strong>{{ $ultimaLeitura ? $ultimaLeitura->recebido_em->diffForHumans() : 'Sem dados recentes' }}</strong></p>
             </div>
 
             <!-- Vital Cards -->
@@ -80,9 +80,9 @@
                 <div class="vital-card heart-card">
                     <div class="vital-header">
                         <div class="vital-icon pulse-primary"><i data-lucide="heart-pulse"></i></div>
-                        <span class="vital-badge normal">{{ $ultimoEvento && $ultimoEvento->frequencia_cardiaca > 100 ? 'Alerta' : 'Normal' }}</span>
+                        <span class="vital-badge normal">{{ $ultimaLeitura && $ultimaLeitura->frequencia_cardiaca > 100 ? 'Alerta' : 'Normal' }}</span>
                     </div>
-                    <div class="vital-value"><span id="bpm-value">{{ $ultimoEvento->frequencia_cardiaca ?? '—' }}</span> <small>bpm</small></div>
+                    <div class="vital-value"><span id="bpm-value">{{ $ultimaLeitura->frequencia_cardiaca ?? '—' }}</span> <small>bpm</small></div>
                     <p class="vital-label">Frequência Cardíaca</p>
                     <div class="vital-chart-mini" id="heart-mini-chart">
                         <svg viewBox="0 0 200 40" preserveAspectRatio="none">
@@ -94,23 +94,23 @@
                 <div class="vital-card spo2-card">
                     <div class="vital-header">
                         <div class="vital-icon pulse-info"><i data-lucide="droplet"></i></div>
-                        <span class="vital-badge normal">{{ $ultimoEvento && $ultimoEvento->oxigenacao_spo2 < 95 ? 'Atenção' : 'Normal' }}</span>
+                        <span class="vital-badge normal">{{ $ultimaLeitura && $ultimaLeitura->oxigenacao_spo2 < 95 ? 'Atenção' : 'Normal' }}</span>
                     </div>
-                    <div class="vital-value"><span id="spo2-value">{{ $ultimoEvento->oxigenacao_spo2 ?? '—' }}</span><small>%</small></div>
+                    <div class="vital-value"><span id="spo2-value">{{ $ultimaLeitura->oxigenacao_spo2 ?? '—' }}</span><small>%</small></div>
                     <p class="vital-label">Oxigenação (SpO2)</p>
                     <div class="vital-range">
-                        <div class="range-bar" style="width: {{ $ultimoEvento ? min(100, max(0, $ultimoEvento->oxigenacao_spo2)) : 0 }}%;"></div>
+                        <div class="range-bar" style="width: {{ $ultimaLeitura ? min(100, max(0, $ultimaLeitura->oxigenacao_spo2)) : 0 }}%;"></div>
                     </div>
                 </div>
                 <div class="vital-card temp-card">
                     <div class="vital-header">
                         <div class="vital-icon pulse-warning"><i data-lucide="thermometer"></i></div>
-                        <span class="vital-badge normal">{{ $ultimoEvento && $ultimoEvento->temperatura_corporal > 37.2 ? 'Atenção' : 'Normal' }}</span>
+                        <span class="vital-badge normal">{{ $ultimaLeitura && $ultimaLeitura->temperatura_corporal > 37.2 ? 'Atenção' : 'Normal' }}</span>
                     </div>
-                    <div class="vital-value"><span id="temp-value">{{ $ultimoEvento->temperatura_corporal ?? '—' }}</span><small>°C</small></div>
+                    <div class="vital-value"><span id="temp-value">{{ $ultimaLeitura->temperatura_corporal ?? '—' }}</span><small>°C</small></div>
                     <p class="vital-label">Temperatura Corporal</p>
                     <div class="vital-range">
-                        <div class="range-bar warning-range" style="width: {{ $ultimoEvento ? min(100, max(0, ($ultimoEvento->temperatura_corporal - 34) * 33)) : 0 }}%;"></div>
+                        <div class="range-bar warning-range" style="width: {{ $ultimaLeitura ? min(100, max(0, ($ultimaLeitura->temperatura_corporal - 34) * 33)) : 0 }}%;"></div>
                     </div>
                 </div>
                 <div class="vital-card fall-card">
@@ -129,14 +129,14 @@
             <div class="map-section">
                 <div class="map-header">
                     <h3><i data-lucide="map-pin"></i> Localização Atual</h3>
-                    <span class="map-timestamp">Atualizado {{ $ultimoEvento ? $ultimoEvento->data_hora_registro->diffForHumans() : 'sem atualização' }}</span>
+                    <span class="map-timestamp">Atualizado {{ $ultimaLeitura ? $ultimaLeitura->recebido_em->diffForHumans() : 'sem atualização' }}</span>
                 </div>
                 <div class="map-container">
                     <div class="map-placeholder">
                         <div class="map-pin-animated">
                             <i data-lucide="map-pin"></i>
                         </div>
-                        <p>{{ $ultimoEvento->localizacao_endereco ?? 'Localização indisponível' }}</p>
+                        <p>{{ $ultimaLeitura && $ultimaLeitura->latitude ? "Lat: {$ultimaLeitura->latitude}, Lng: {$ultimaLeitura->longitude}" : 'Localização indisponível' }}</p>
                         <span>Localização aproximada via Wi-Fi</span>
                     </div>
                 </div>
@@ -463,7 +463,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('script.js') }}"></script>
+    <script src="{{ asset('script.js') }}?v={{ time() }}"></script>
     <script>
         lucide.createIcons();
     </script>

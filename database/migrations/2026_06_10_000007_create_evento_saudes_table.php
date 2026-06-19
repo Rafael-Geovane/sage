@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('evento_saudes', function (Blueprint $table) {
+        Schema::create('evento_saude', function (Blueprint $table) {
             $table->id('id_evento');
             $table->integer('frequencia_cardiaca')->nullable();
             $table->integer('oxigenacao_spo2')->nullable();
@@ -23,18 +23,18 @@ return new class extends Migration
 
             $table->foreign('id_usuario')
                   ->references('id_usuario')
-                  ->on('usuarios')
+                  ->on('usuario')
                   ->onDelete('cascade');
 
             $table->foreign('id_dispositivo')
                   ->references('id_dispositivo')
-                  ->on('dispositivos')
+                  ->on('dispositivo')
                   ->onDelete('set null');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('evento_saudes');
+        Schema::dropIfExists('evento_saude');
     }
 };

@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('dispositivos', function (Blueprint $table) {
+        Schema::create('dispositivo', function (Blueprint $table) {
             $table->id('id_dispositivo');
             $table->string('codigo_serial', 50)->unique();
             $table->string('versao_firmware', 20)->nullable();
@@ -21,13 +21,13 @@ return new class extends Migration
 
             $table->foreign('id_usuario')
                   ->references('id_usuario')
-                  ->on('usuarios')
+                  ->on('usuario')
                   ->onDelete('set null');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('dispositivos');
+        Schema::dropIfExists('dispositivo');
     }
 };

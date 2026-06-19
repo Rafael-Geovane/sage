@@ -255,15 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Simulate live vital updates on dashboard
         if (document.querySelector('.dashboard-page')) {
-            setInterval(() => {
-                const bpm = document.getElementById('bpm-value');
-                const spo2 = document.getElementById('spo2-value');
-                const temp = document.getElementById('temp-value');
-                if (bpm) bpm.innerText = 68 + Math.floor(Math.random() * 12);
-                if (spo2) spo2.innerText = 95 + Math.floor(Math.random() * 4);
-                if (temp) temp.innerText = (36.0 + Math.random() * 0.8).toFixed(1);
-                console.log('temp', temp.innerText, 'bpm', bpm.innerText, 'spo2', spo2.innerText);
-            }, 3000);
+            // (Simulação em JS removida: agora os dados reais da API do webhook são exibidos)
         }
     }
 
@@ -795,45 +787,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Login Modal - declarado cedo para uso no fluxo de registro
+    const loginBtnNav = document.getElementById('login-btn-nav');
+    const loginModal = document.getElementById('login-modal');
+    const closeModal = document.getElementById('close-modal');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+
     const registerBtnNav = document.getElementById('register-btn-nav');
     const registerModal = document.getElementById('register-modal');
     const closeRegisterModal = document.getElementById('close-register-modal');
     const registerForm = document.getElementById('register-form');
     const registerError = document.getElementById('register-error');
     const openLoginFromRegister = document.getElementById('open-login-from-register');
-
-    const STORAGE_USERS_KEY = 'sage_users';
-    const initialUsersDB = [
-        { id: 0, email: 'admin@sage.com', password: 'admin', role: 'admin', name: 'Admin Sage' },
-        { id: 1, email: 'user@sage.com', password: 'user', role: 'user', name: 'Usuário Sage' }
-    ];
-
-    function loadStoredUsers() {
-        try {
-            const raw = localStorage.getItem(STORAGE_USERS_KEY);
-            const data = raw ? JSON.parse(raw) : [];
-            return Array.isArray(data) ? data : [];
-        } catch {
-            return [];
-        }
-    }
-
-    function saveStoredUsers(users) {
-        localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
-    }
-
-    function getUsersDB() {
-        const stored = loadStoredUsers();
-        const merged = [...initialUsersDB];
-        stored.forEach(user => {
-            if (!merged.some(u => u.email === user.email)) {
-                merged.push(user);
-            }
-        });
-        return merged;
-    }
-
-    let usersDB = getUsersDB();
 
     function closeRegisterModalFn() {
         if (!registerModal) return;
@@ -888,7 +854,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (adminChecked) {
                 // Se for admin, já pode criar a conta sem preencher idoso
-                registerForm.dispatchEvent(new Event('submit', { cancelable: true }));
+                doRegisterSubmit();
             } else {
                 step1.style.display = 'none';
                 step2.style.display = 'block';
@@ -918,35 +884,49 @@ document.addEventListener('DOMContentLoaded', () => {
             ind2.style.fontWeight = 'bold'; ind2.style.color = 'var(--primary)';
         });
 
-        registerForm?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
+        // Função de registro extraída para poder ser chamada diretamente
+        async function doRegisterSubmit() {
             if (!registerForm) return;
             const name = document.getElementById('register-name').value.trim();
             const email = document.getElementById('register-email').value.trim().toLowerCase();
             const password = document.getElementById('register-password').value;
             const adminChecked = document.getElementById('register-admin').checked;
 
-            usersDB = getUsersDB();
-            const existingUser = usersDB.find(u => u.email === email);
-            if (existingUser) {
-                if (registerError) {
-                    registerError.textContent = 'Já existe uma conta com este e-mail.';
-                    registerError.classList.remove('hidden');
+            let success = false;
+
+            if (adminChecked) {
+                try {
+                    const response = await fetch('/api/admins', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            nome: name,
+                            email: email,
+                            senha: password
+                        })
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error('Erro retornado pela API ao criar admin:', errorData);
+                        if (registerError) {
+                            registerError.textContent = errorData.message || 'Erro ao criar conta de administrador.';
+                            registerError.classList.remove('hidden');
+                        }
+                        return;
+                    }
+                    success = true;
+                } catch (err) {
+                    console.error('Erro de rede ao criar admin', err);
+                    if (registerError) {
+                        registerError.textContent = 'Erro de rede ao criar conta.';
+                        registerError.classList.remove('hidden');
+                    }
+                    return;
                 }
-                return;
-            }
-
-            const nextId = Date.now();
-            const newUser = {
-                id: nextId,
-                name,
-                email,
-                password,
-                role: adminChecked ? 'admin' : 'user'
-            };
-
-            if (!adminChecked) {
+            } else {
                 const pNome = document.getElementById('register-paciente-nome').value.trim();
                 const pCpf = document.getElementById('register-paciente-cpf').value.trim();
                 const pNasc = document.getElementById('register-paciente-nascimento').value;
@@ -958,38 +938,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 const medicamentos = document.getElementById('register-medicamentos').value.trim();
 
                 try {
-                    await fetch('/api/usuarios', {
+                    const response = await fetch('/api/usuarios', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': getCsrfToken()
                         },
                         body: JSON.stringify({
-                            nome: pNome || name, // Fallback se paciente n for preenchido
+                            nome: pNome || name,
                             cpf: pCpf || null,
                             data_nascimento: pNasc || null,
                             telefone: pTel || null,
-                            email: email, // Usamos o email do cuidador para logar no DB tbm
+                            email: email,
+                            senha: password,
                             nome_plano: 'Básico',
-                            nome_responsavel: name, // Cuidador
+                            nome_responsavel: name,
                             tipo_sanguineo: tSangue || null,
                             condicoes_medicas: condicoes || null,
                             alergias: alergias || null,
                             medicamentos: medicamentos || null
                         })
                     });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error('Erro retornado pela API ao criar usuário:', errorData);
+                        if (registerError) {
+                            registerError.textContent = errorData.message || 'Erro ao criar conta. Verifique os dados.';
+                            registerError.classList.remove('hidden');
+                        }
+                        return;
+                    }
+                    success = true;
                 } catch (err) {
                     console.error('Erro ao sincronizar idoso com banco', err);
+                    if (registerError) {
+                        registerError.textContent = 'Erro de rede ao criar conta.';
+                        registerError.classList.remove('hidden');
+                    }
+                    return;
                 }
             }
 
-            const stored = loadStoredUsers();
-            stored.push(newUser);
-            saveStoredUsers(stored);
-            usersDB = getUsersDB();
+            if (!success) return;
 
             closeRegisterModalFn();
-            
+
             // Restaura as tabs pro estado inicial
             if (step1) step1.style.display = 'block';
             if (step2) step2.style.display = 'none';
@@ -999,56 +992,89 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ind3) { ind3.style.fontWeight = 'normal'; ind3.style.color = 'var(--text-secondary)'; }
 
             if (loginModal) loginModal.classList.remove('hidden');
-            document.getElementById('login-email').value = email;
-            document.getElementById('login-password').value = '';
-            alert('Conta e ficha médica criadas com sucesso. Agora faça login.');
+            const loginEmailField = document.getElementById('login-email');
+            const loginPasswordField = document.getElementById('login-password');
+            if (loginEmailField) loginEmailField.value = email;
+            if (loginPasswordField) loginPasswordField.value = '';
+            alert('Conta criada com sucesso! Agora faça login.');
+        }
+
+        registerForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const adminChecked = document.getElementById('register-admin').checked;
+            const step3El = document.getElementById('register-step-3');
+
+            // Bloquear envio prematuro (Enter no passo 1 ou 2) para não-admins
+            if (!adminChecked && step3El && step3El.style.display === 'none') {
+                if (registerError) {
+                    registerError.textContent = 'Por favor, preencha todos os passos usando os botões.';
+                    registerError.classList.remove('hidden');
+                }
+                return;
+            }
+
+            await doRegisterSubmit();
         });
     }
 
-    // 7. Login Logic
-    const loginBtnNav = document.getElementById('login-btn-nav');
-    const loginModal = document.getElementById('login-modal');
-    const closeModal = document.getElementById('close-modal');
-    const loginForm = document.getElementById('login-form');
-    const loginError = document.getElementById('login-error');
-
+    // 7. Login Logic (variáveis já declaradas acima)
     if (loginBtnNav && loginModal) {
         loginBtnNav.addEventListener('click', () => {
             loginModal.classList.remove('hidden');
         });
 
-        closeModal.addEventListener('click', () => {
-            loginModal.classList.add('hidden');
-            loginError.classList.add('hidden');
-        });
+        if (closeModal) {
+            closeModal.addEventListener('click', () => {
+                loginModal.classList.add('hidden');
+                if (loginError) loginError.classList.add('hidden');
+            });
+        }
 
         loginModal.addEventListener('click', (e) => {
             if (e.target === loginModal) {
                 loginModal.classList.add('hidden');
-                loginError.classList.add('hidden');
+                if (loginError) loginError.classList.add('hidden');
             }
         });
 
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim().toLowerCase();
-            const password = document.getElementById('login-password').value;
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value.trim().toLowerCase();
+                const password = document.getElementById('login-password').value;
 
-            usersDB = getUsersDB();
-            const user = usersDB.find(u => u.email === email && u.password === password);
+                if (loginError) loginError.classList.add('hidden');
 
-            if (user) {
-                localStorage.setItem('sage_user', JSON.stringify(user));
-                document.cookie = "sage_email=" + encodeURIComponent(user.email) + "; path=/";
-                if (user.role === 'admin') {
-                    window.location.href = '/admin';
-                } else {
-                    window.location.href = '/dashboard';
+                try {
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            senha: password
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.role === 'admin') {
+                            window.location.href = '/admin';
+                        } else {
+                            window.location.href = '/dashboard';
+                        }
+                    } else {
+                        if (loginError) loginError.classList.remove('hidden');
+                    }
+                } catch (err) {
+                    console.error('Erro no login', err);
+                    if (loginError) loginError.classList.remove('hidden');
                 }
-            } else {
-                loginError.classList.remove('hidden');
-            }
-        });
+            });
+        }
     }
 
     // ==========================================

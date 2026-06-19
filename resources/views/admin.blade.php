@@ -666,7 +666,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('script.js') }}"></script>
+    <script src="{{ asset('script.js') }}?v={{ time() }}"></script>
     <script>
         lucide.createIcons();
     </script>

@@ -7,6 +7,7 @@ use App\Models\Cuidador;
 use App\Models\Dispositivo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class UsuarioController extends Controller
 {
@@ -31,6 +32,7 @@ class UsuarioController extends Controller
             'endereco'             => 'nullable|string|max:255',
             'telefone'             => 'nullable|string|max:20',
             'email'                => 'nullable|email|max:150|unique:usuario,email',
+            'senha'                => 'nullable|string|min:6',
             'nome_plano'           => 'nullable|string|max:30',
             'notificar_push'       => 'boolean',
             'notificar_sms'        => 'boolean',
@@ -62,6 +64,10 @@ class UsuarioController extends Controller
                 'notificar_ligacao', 'id_admin_responsavel',
                 'tipo_sanguineo', 'condicoes_medicas', 'alergias', 'medicamentos',
             ])->toArray();
+
+            if (!empty($validated['senha'])) {
+                $usuarioData['senha_hash'] = Hash::make($validated['senha']);
+            }
 
             $usuario = Usuario::create($usuarioData);
 

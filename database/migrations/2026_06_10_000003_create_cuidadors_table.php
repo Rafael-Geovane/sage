@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('cuidadors', function (Blueprint $table) {
+        Schema::create('cuidador', function (Blueprint $table) {
             $table->id('id_cuidador');
             $table->string('nome', 100);
             $table->string('telefone', 20);
@@ -19,13 +19,13 @@ return new class extends Migration
 
             $table->foreign('id_usuario')
                   ->references('id_usuario')
-                  ->on('usuarios')
+                  ->on('usuario')
                   ->onDelete('cascade');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('cuidadors');
+        Schema::dropIfExists('cuidador');
     }
 };

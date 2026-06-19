@@ -33,6 +33,11 @@ class Usuario extends Model
         'condicoes_medicas',
         'alergias',
         'medicamentos',
+        'senha_hash',
+    ];
+
+    protected $hidden = [
+        'senha_hash',
     ];
 
     protected function casts(): array
@@ -107,6 +112,15 @@ class Usuario extends Model
     public function eventosSaude(): HasMany
     {
         return $this->hasMany(EventoSaude::class, 'id_usuario', 'id_usuario');
+    }
+
+    /**
+     * Retorna a última leitura de sensor recebida.
+     */
+    public function ultimaLeitura(): HasOne
+    {
+        return $this->hasOne(LeituraSensor::class, 'id_usuario', 'id_usuario')
+                    ->latestOfMany('recebido_em');
     }
 
     /**

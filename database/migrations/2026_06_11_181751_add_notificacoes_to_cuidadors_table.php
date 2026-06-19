@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('cuidadors', function (Blueprint $table) {
+        Schema::table('cuidador', function (Blueprint $table) {
             $table->boolean('notificar_push')->default(false)->after('id_usuario');
             $table->boolean('notificar_sms')->default(false)->after('notificar_push');
             $table->boolean('notificar_ligacao')->default(false)->after('notificar_sms');
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('cuidadors', function (Blueprint $table) {
+        Schema::table('cuidador', function (Blueprint $table) {
             $table->dropColumn(['notificar_push', 'notificar_sms', 'notificar_ligacao']);
         });
     }

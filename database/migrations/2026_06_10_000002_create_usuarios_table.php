@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('usuarios', function (Blueprint $table) {
+        Schema::create('usuario', function (Blueprint $table) {
             $table->id('id_usuario');
             $table->string('nome', 100);
             $table->string('cpf', 14)->nullable()->unique();
@@ -25,13 +25,13 @@ return new class extends Migration
 
             $table->foreign('id_admin_responsavel')
                   ->references('id_admin')
-                  ->on('admins')
+                  ->on('admin')
                   ->onDelete('set null');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('usuarios');
+        Schema::dropIfExists('usuario');
     }
 };

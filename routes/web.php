@@ -10,6 +10,10 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\AuthController;
+use App\Http\Middleware\CheckRole;
+use App\Http\Controllers\WebhookController;
+
 Route::get('/styles.css', function () {
     $css = file_get_contents(resource_path('css/app.css'));
     $css = preg_replace('/^\s*@import.*$/m', '', $css);
@@ -25,14 +29,23 @@ Route::get('/styles.css', function () {
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/loja', [HomeController::class, 'loja'])->name('loja');
 
-// Painéis com dados do banco
-Route::get('/admin', [AdminController::class, 'index'])->name('admin');
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// Painéis com dados do banco (protegidos via cookie/middleware)
+Route::get('/admin', [AdminController::class, 'index'])
+    ->middleware(CheckRole::class.':admin')
+    ->name('admin');
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(CheckRole::class.':user')
+    ->name('dashboard');
+
+// API Pública de Auth
+Route::post('/api/login', [AuthController::class, 'login']);
 
 // API de Usuários (CRUD)
 Route::prefix('api')->group(function () {
     Route::get('/usuarios', [UsuarioController::class, 'index']);
     Route::post('/usuarios', [UsuarioController::class, 'store']);
+    Route::post('/admins', [AdminController::class, 'store']);
     Route::get('/usuarios/{id}', [UsuarioController::class, 'show']);
     Route::put('/usuarios/{id}', [UsuarioController::class, 'update']);
     Route::delete('/usuarios/{id}', [UsuarioController::class, 'destroy']);
@@ -64,6 +77,8 @@ Route::prefix('api')->group(function () {
 
     // Sensores (ingestão de dados do colete)
     Route::post('/sensores/ingest', [SensorController::class, 'ingest']);
+    // Receber webhooks externos
+    Route::post('/webhook', [WebhookController::class, 'handle']);
     Route::get('/sensores/{dispositivoId}/ultimas', [SensorController::class, 'ultimas']);
 });
 

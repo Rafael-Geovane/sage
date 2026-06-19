@@ -12,23 +12,21 @@ class DashboardController extends Controller
      */
     public function index(\Illuminate\Http\Request $request)
     {
-        // Pega o cookie diretamente do $_COOKIE pois o Laravel criptografa cookies via middleware
-        // e o frontend gravou o cookie sem criptografia (raw javascript).
-        $email = $_COOKIE['sage_email'] ?? null;
+        $email = $request->cookie('sage_email');
         if ($email) {
-            $email = urldecode($email); // JavaScript's encodeURIComponent is similar to urlencode
-            $usuario = Usuario::with(['dispositivo', 'dispositivos', 'cuidadores', 'ultimoEvento'])
+            $email = urldecode($email);
+            $usuario = Usuario::with(['dispositivo', 'dispositivos', 'cuidadores', 'ultimoEvento', 'ultimaLeitura'])
                 ->where('email', $email)
                 ->first();
         } else {
-            // Em produção, seria o usuário logado. Aqui usamos o primeiro para demo.
-            $usuario = Usuario::with(['dispositivo', 'dispositivos', 'cuidadores', 'ultimoEvento'])->first();
+            return redirect('/');
         }
 
         if (!$usuario) {
             return view('dashboard', [
                 'usuario' => null,
                 'ultimoEvento' => null,
+                'ultimaLeitura' => null,
                 'dispositivo' => null,
                 'dispositivos' => collect(),
                 'cuidadores' => collect(),
@@ -38,9 +36,47 @@ class DashboardController extends Controller
         }
 
         $ultimoEvento = $usuario->ultimoEvento;
+        $ultimaLeitura = $usuario->ultimaLeitura;
         $dispositivo  = $usuario->dispositivo;
         $dispositivos = $usuario->dispositivos;
         $cuidadores   = $usuario->cuidadores;
+
+        // Puxar dados ao vivo do Webhook.site
+        try {
+            $response = \Illuminate\Support\Facades\Http::get('https://webhook.site/token/4772b7fa-2469-4c0c-b496-dfc8adb12b95/requests');
+            if ($response->successful()) {
+                $requests = $response->json('data');
+                // Pegar o último POST (que contém o JSON)
+                $latestPost = collect($requests)->where('method', 'POST')->sortByDesc('created_at')->first();
+                if ($latestPost && !empty($latestPost['content'])) {
+                    $content = json_decode($latestPost['content'], true);
+                    if (isset($content['sensores'])) {
+                        $sensores = $content['sensores'];
+                        
+                        // Substitui a leitura do banco pelos dados em tempo real da API do webhook
+                        $ultimaLeitura = (object) [
+                            'recebido_em' => \Carbon\Carbon::parse($latestPost['created_at']),
+                            'frequencia_cardiaca' => $sensores['frequencia_cardiaca'] ?? null,
+                            'oxigenacao_spo2' => $sensores['oxigenacao_spo2'] ?? null,
+                            'temperatura_corporal' => $sensores['temperatura_corporal'] ?? null,
+                            'latitude' => $sensores['gps']['latitude'] ?? null,
+                            'longitude' => $sensores['gps']['longitude'] ?? null,
+                        ];
+
+                        // Atualiza dinamicamente o status do dispositivo no dashboard
+                        if ($dispositivo) {
+                            $dispositivo->nivel_bateria = $sensores['nivel_bateria'] ?? $dispositivo->nivel_bateria;
+                            $dispositivo->status_conexao = 'Online';
+                            $dispositivo->is_online = true;
+                            $dispositivo->tempo_ultimo_sinal = 'Ao vivo (Webhook.site)';
+                            $dispositivo->bateria_css_color = $dispositivo->nivel_bateria > 20 ? 'var(--success)' : 'var(--danger)';
+                        }
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Se falhar a requisição, mantém os dados do banco
+        }
 
         session(['cuidadores_ids' => $cuidadores->pluck('id_cuidador')->toArray()]);
 
@@ -59,6 +95,7 @@ class DashboardController extends Controller
         return view('dashboard', compact(
             'usuario',
             'ultimoEvento',
+            'ultimaLeitura',
             'dispositivo',
             'dispositivos',
             'cuidadores',

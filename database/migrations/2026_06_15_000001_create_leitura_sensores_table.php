@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id('id_leitura');
 
             // Relacionamentos
-            $table->integer('id_dispositivo');
-            $table->integer('id_usuario')->nullable();
+            $table->unsignedBigInteger('id_dispositivo');
+            $table->unsignedBigInteger('id_usuario')->nullable();
 
             // JSON cru do colete (armazena o payload completo para referência)
             $table->json('payload')->nullable();
